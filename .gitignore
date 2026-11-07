@@ -1,0 +1,16 @@
+node_modules/
+.pnpm-store/
+.expo/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+.local/
+.convex/
+.DS_Store
+*.log
+*.apk
+*.aab
+*.ipa
