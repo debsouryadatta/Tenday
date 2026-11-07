@@ -2,7 +2,11 @@
 
 You are starting a new top-level build thread. The previous discussion is fully represented here and in the linked files; do not assume access to its chat history. The owner wants the complete app built autonomously after one short round of important decisions.
 
-## Your first turn
+## Active build status — 8 November 2026
+
+The owner has answered the initial gate: Android APK + web preview, no fixed deadline, free-only OpenRouter AI. Model IDs must be configurable in Convex environment variables. Build work is authorised; do not re-ask the initial questions. See `docs/DECISIONS.md` for the recorded answers. No app implementation existed when this gate completed.
+
+## Original first-turn instructions (completed)
 
 1. Read `AGENTS.md`, this file, `docs/CONTEXT.md`, `docs/BRIEF.md`, `docs/DECISIONS.md`, `docs/DESIGN_SYSTEM.md`, `plans/IMPLEMENTATION.md` and `docs/SETUP.md`.
 2. Inspect `assets/brand/approved-carefold-board.png`. The chosen symbol is Carefold, not Tender T; the wordmark must read **Tenday**.

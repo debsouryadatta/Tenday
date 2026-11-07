@@ -34,3 +34,11 @@ No need to ask which logo, palette, stack, repo name, default navigation, font, 
 ## Setup status
 
 The handoff is prepared before feature implementation. Consult `docs/SETUP.md` for the final repository/cloud state and `.local/LOCAL_CONTEXT.md` for private original-machine details. Record subsequent owner answers here before implementing dependent work.
+
+## Build preflight answers — 8 November 2026
+
+- Delivery: Android APK plus web preview. No iOS deliverable is required.
+- Schedule: no fixed cutoff; continue until the scoped app is complete.
+- AI spend: free-only. No paid inference, paid fallback, credit purchase or automatic top-up is authorised.
+- AI configuration: choose current suitable free OpenRouter models; model IDs must be configurable through server-side Convex environment variables.
+- Initial gate is complete. Proceed autonomously within the four approved flows and raise only material blockers.
