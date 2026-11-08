@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
-export const daySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((s) => !Number.isNaN(Date.parse(s)) && new Date(s).toISOString().slice(0, 10) === s, 'Choose a valid date');
+export const daySchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine(
+    (s) =>
+      !Number.isNaN(Date.parse(s)) &&
+      new Date(s).toISOString().slice(0, 10) === s,
+    'Choose a valid date',
+  );
 export const mealItemSchema = z.object({
   name: z.string().trim().min(1).max(100),
   portion: z.string().trim().min(1).max(80),
@@ -32,15 +40,20 @@ export const goalSchema = z.object({
   rationale: z.string().max(400),
 });
 export type Goal = z.infer<typeof goalSchema>;
-export const readingSchema = z.object({
-  marker: z.string().trim().min(1).max(100),
-  value: z.string().trim().min(1).max(80),
-  unit: z.string().max(50),
-  reference: z.string().max(100),
-  low: z.number().finite().nullable(),
-  high: z.number().finite().nullable(),
-  page: z.number().int().min(1).max(3).nullable(),
-}).refine(r => r.low === null || r.high === null || r.low <= r.high, 'Range lower bound must be below upper bound');
+export const readingSchema = z
+  .object({
+    marker: z.string().trim().min(1).max(100),
+    value: z.string().trim().min(1).max(80),
+    unit: z.string().max(50),
+    reference: z.string().max(100),
+    low: z.number().finite().nullable(),
+    high: z.number().finite().nullable(),
+    page: z.number().int().min(1).max(3).nullable(),
+  })
+  .refine(
+    (r) => r.low === null || r.high === null || r.low <= r.high,
+    'Range lower bound must be below upper bound',
+  );
 export type Reading = z.infer<typeof readingSchema>;
 export const reportSchema = z.object({
   title: z.string().trim().min(1).max(100),
@@ -51,12 +64,15 @@ export const reportSchema = z.object({
 export type ReportInput = z.infer<typeof reportSchema>;
 
 export function totals(items: MealItem[]) {
-  return items.reduce((acc, item) => ({
-    calories: acc.calories + item.calories * item.quantity,
-    protein: acc.protein + item.protein * item.quantity,
-    carbs: acc.carbs + item.carbs * item.quantity,
-    fat: acc.fat + item.fat * item.quantity,
-  }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  return items.reduce(
+    (acc, item) => ({
+      calories: acc.calories + item.calories * item.quantity,
+      protein: acc.protein + item.protein * item.quantity,
+      carbs: acc.carbs + item.carbs * item.quantity,
+      fat: acc.fat + item.fat * item.quantity,
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 },
+  );
 }
 export function localDay(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -64,19 +80,52 @@ export function localDay(date = new Date()) {
 export function localTime(date = new Date()) {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
-export function readingStatus(reading: Reading): 'below' | 'above' | 'within' | 'unavailable' {
+export function readingStatus(
+  reading: Reading,
+): 'below' | 'above' | 'within' | 'unavailable' {
   if (!/^-?\d+(\.\d+)?$/.test(reading.value.trim())) return 'unavailable';
   const value = Number(reading.value);
   if (reading.low !== null && value < reading.low) return 'below';
   if (reading.high !== null && value > reading.high) return 'above';
-  return reading.low !== null || reading.high !== null ? 'within' : 'unavailable';
+  return reading.low !== null || reading.high !== null
+    ? 'within'
+    : 'unavailable';
 }
 export function comparable(a: Reading, b: Reading) {
-  return a.marker.trim().toLowerCase() === b.marker.trim().toLowerCase() && a.unit.trim().toLowerCase() === b.unit.trim().toLowerCase() && /^-?\d+(\.\d+)?$/.test(a.value) && /^-?\d+(\.\d+)?$/.test(b.value);
+  return (
+    a.marker.trim().toLowerCase() === b.marker.trim().toLowerCase() &&
+    a.unit.trim() === b.unit.trim() &&
+    /^-?\d+(\.\d+)?$/.test(a.value) &&
+    /^-?\d+(\.\d+)?$/.test(b.value)
+  );
 }
-export const blankItem = (): MealItem => ({ name: '', portion: '1 serving', quantity: 1, calories: 0, protein: 0, carbs: 0, fat: 0 });
+export const blankItem = (): MealItem => ({
+  name: '',
+  portion: '1 serving',
+  quantity: 1,
+  calories: 0,
+  protein: 0,
+  carbs: 0,
+  fat: 0,
+});
 export function goalProgress(goal: Goal, meals: { items: MealItem[] }[]) {
-  const daily = totals(meals.flatMap(m => m.items));
-  const value = goal.kind === 'consistency' ? meals.length : goal.kind === 'protein' ? daily.protein : daily.calories;
-  return { value, target: goal.target, fraction: Math.min(value / goal.target, 1), unit: goal.kind === 'consistency' ? 'meals' : goal.kind === 'protein' ? 'g protein' : 'kcal', daily };
+  const daily = totals(meals.flatMap((m) => m.items));
+  const value =
+    goal.kind === 'consistency'
+      ? meals.length
+      : goal.kind === 'protein'
+        ? daily.protein
+        : daily.calories;
+  return {
+    value,
+    target: goal.target,
+    fraction: Math.min(value / goal.target, 1),
+    unit:
+      goal.kind === 'consistency'
+        ? 'meals'
+        : goal.kind === 'protein'
+          ? 'g protein'
+          : 'kcal',
+    daily,
+  };
 }

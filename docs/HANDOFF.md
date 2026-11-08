@@ -4,7 +4,17 @@ You are starting a new top-level build thread. The previous discussion is fully 
 
 ## Active build status — 8 November 2026
 
-The owner has answered the initial gate: Android APK + web preview, no fixed deadline, free-only OpenRouter AI. Model IDs must be configurable in Convex environment variables. Build work is authorised; do not re-ask the initial questions. See `docs/DECISIONS.md` for the recorded answers. No app implementation existed when this gate completed.
+The initial gate is complete: Android APK + web preview, no fixed deadline, free-only OpenRouter AI, with server-side configurable model IDs. Continue autonomously; do not re-ask approved choices.
+
+Implemented: Expo SDK 58 / React Native 0.88 app, shared Inter/sage components, two-step goal setup, Today, text/photo/voice-service capture, editable meal review, history/edit/delete, durable confirmed-write queue, private report upload/review/history/source, and contextual conversation using the Convex Agent component. Convex Auth issues persistent anonymous sessions; cloud ownership comes from authenticated identity.
+
+Verified so far: 25 domain/backend tests, lint, mobile/backend TypeScript, web export, live anonymous auth and goal persistence, free text meal analysis, real-food photo recognition, grounded assistant replies, and synthetic PDF/image report extraction. Live source HTTP checks returned 200 for the owner and 404 without auth. The web flow was exercised in the Android WebView shell: onboarding → Today → text analysis → editable portion correction → Save → correct updated totals. Analysis alone did not create saved meals.
+
+AI: `dots-studio/dots-3-note-preview:free` is configured on Tenday's dev deployment for text and vision. Requests disallow collection-based routing and cap all model prices at zero. NVIDIA free endpoints were excluded because their terms prohibit personal input. No paid inference or OCR was used. See `docs/AI.md` for retirement/availability caveats.
+
+Remaining: complete the signed Android release build and native UI journeys; check permission/unavailable speech behavior, offline queued saves/relaunch, report picker/review/source on device, small/large text layouts, and final build size; prepare the recording and hosted web preview; update README/setup/verification and publish the remaining source commits. Do not call the app complete until this evidence exists. T3 browser preview failed twice with the Ubuntu AppArmor restriction; CUA browser host was also unavailable. Android WebView through T3 Device tools worked as the browser fallback. Do not change host security settings.
+
+The first backend commit is `bef5cf9`; the mobile app and later fixes are still uncommitted at this checkpoint. `scripts/build-android.mjs` builds with two workers and independent Tenday signing from ignored `.local/android-signing.properties`; no MemoHack signing material is used. The current native build was interrupted before producing an APK and is being resumed. Logs and synthetic live-test sessions stay in ignored `.local/`. Only synthetic health inputs were used for tests.
 
 ## Original first-turn instructions (completed)
 

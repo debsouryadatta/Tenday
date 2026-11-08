@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Tenday",
+    "slug": "tenday",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/carefold.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "app.tenday.companion",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "app.tenday.companion",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/carefold.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "predictiveBackGestureEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/carefold.png",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose a meal photo for your editable food log.",
+          "cameraPermission": "Take a meal photo for your editable food log.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Use your microphone to describe a meal.",
+          "speechRecognitionPermission": "Turn your meal description into editable text."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "buildArchs": ["arm64-v8a", "x86_64"]
+          }
+        }
+      ],
+      "./plugins/with-local-signing.cjs"
+    ],
+    "scheme": "tenday"
+  }
+}

@@ -2,11 +2,17 @@
   "name": "tenday",
   "version": "0.0.0",
   "private": true,
-  "description": "Tenday workspace and implementation handoff",
+  "description": "Tenday personal health companion",
   "packageManager": "pnpm@12.18.0",
   "scripts": {
     "verify:setup": "node scripts/verify-setup.mjs",
-    "dev:backend": "pnpm --filter @tenday/convex dev"
+    "dev:backend": "pnpm --filter @tenday/convex dev",
+    "test": "vitest run",
+    "lint": "eslint apps/mobile/src packages/convex/src packages/domain/src",
+    "typecheck": "pnpm --filter @tenday/mobile typecheck && pnpm --filter @tenday/convex exec tsc --noEmit --project src/tsconfig.json",
+    "verify": "pnpm verify:setup && pnpm lint && pnpm typecheck && pnpm test",
+    "build:web": "pnpm --filter @tenday/mobile build:web",
+    "build:android": "node scripts/build-android.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -16,6 +22,7 @@
     "convex-test": "^0.0.67",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.9.10",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.6",
     "vitest": "^5.1.0"

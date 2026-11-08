@@ -178,6 +178,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: ^7.1.1
         version: 7.1.1(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
+      prettier:
+        specifier: ^3.9.10
+        version: 3.9.10
       typescript-eslint:
         specifier: ^8.72.1
         version: 8.72.1(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)

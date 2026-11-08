@@ -1,43 +1,59 @@
 # Tenday
 
-A calm personal health companion that turns meals, goals and health reports into useful daily actions.
+A calm personal health companion. Set a useful goal, log a meal with less effort, understand your day, and keep health reports with their original context.
 
-**Status:** repository and design handoff prepared. App implementation begins in the dedicated build thread after one short round of essential decisions. This repository does not yet contain a runnable mobile app.
+Tenday uses the approved **Carefold** emblem, Inter, forest green, sage and a white-first interface. Today is home; the assistant stays one tap away.
 
-![Approved Tenday identity](assets/brand/approved-carefold-board.png)
+## Four complete journeys
 
-## Start here
+- **Find your rhythm:** short goal setup, optional preferences, an editable daily reference and persistent anonymous identity.
+- **Log a meal:** photo, device/browser speech recognition or text → editable food and portion review → explicit Save. History supports corrections and deletion.
+- **Understand today:** progress from confirmed records, one grounded next step, and a durable contextual conversation. Preferences are visible and editable; AI cannot silently save a meal or change a goal.
+- **Read a report:** private image/text-PDF upload → exact-value review → confirmation → history, original source and plain-language explanation through Assistant.
 
-- [Build handoff](docs/HANDOFF.md)
-- [Implementation plan](plans/IMPLEMENTATION.md)
-- [Product brief](docs/BRIEF.md)
-- [Design system](docs/DESIGN_SYSTEM.md)
-- [Decisions](docs/DECISIONS.md)
-- [Conversation context](docs/CONTEXT.md)
+Workouts, wearables, social features, subscriptions and complex signup are deliberately out of scope. No normal flow is seeded with pretend personal records or hardcoded AI results.
 
-## Product scope
+## Run it
 
-1. Set a clear personal goal without a long signup funnel.
-2. Log a meal by camera, voice or text; review estimates before saving.
-3. Understand today's progress and get one contextual next step from a helpful assistant.
-4. Upload a health report, check extracted readings and understand the terms.
-
-Expo and React Native provide the mobile experience, Convex owns app data, and OpenRouter supplies AI capabilities. Firebase is optional and will be included only for a justified service such as identity.
-
-## Workspace setup
-
-Use pnpm; workspace packages will live under `apps/*` and `packages/*`. The root is intentionally light until app implementation starts.
+Requires Node 26, pnpm 12.18.0 and a separate Convex development project. Android release builds additionally need JDK 21 and the Android SDK.
 
 ```sh
-pnpm verify:setup
+pnpm install --frozen-lockfile
+pnpm --filter @tenday/convex exec convex dev
 ```
 
-Copy `.env.example` for a fresh local setup. `.env.local` is ignored. An authorised local OpenRouter key is already available on the original machine and configured on the separate Tenday Convex development deployment; never commit or expose it. See [setup details](docs/SETUP.md) for backend commands and remaining mobile/build setup.
+Follow [setup instructions](docs/SETUP.md) to prepare private anonymous-auth/signing configuration and the public mobile backend addresses, then:
 
-## Brand
+```sh
+pnpm --filter @tenday/mobile start
+pnpm verify
+pnpm build:web
+pnpm build:android
+```
 
-**Tenday** uses the **Carefold** emblem, forest green, sage and white. The approved board is the source of truth; the standalone emblem is a convenient workspace asset. Final vector assets should preserve the approved geometry. See [brand notes](assets/brand/README.md).
+The existing Tenday deployment is already configured on the original machine. No further credentials should be requested there. OpenRouter credentials stay on the backend; mobile environment variables contain only public Convex addresses.
 
-## Source brief
+## AI and privacy
 
-[Original assignment](https://docs.google.com/document/d/1aZeIitZOeb8W9lqR6rL36Mkspq65T2hpa0hr848rbNc/edit?tab=t.0). The repository brief preserves the requirements without publishing assignment-only placeholder names or submission contacts. The complete export is available locally to the implementation agent.
+AI is **free-only**. `OPENROUTER_TEXT_MODEL` and `OPENROUTER_VISION_MODEL` are server-side Convex variables, currently set to `dots-studio/dots-3-note-preview:free`. Requests cap model prices at zero and disallow collection-based routing; there is no paid fallback or paid PDF OCR. See [model research, configuration and limits](docs/AI.md).
+
+Convex Auth securely issues anonymous sessions. Every health record, action context and file operation derives ownership from the authenticated session. Sources are retrieved through authenticated HTTP, without permanent public storage links. Draft AI output is separate from confirmed records. An upload alone never saves a report.
+
+A stable local queue retains explicitly confirmed pending writes, with server-side operation IDs preventing duplicate saves. Offline AI is unavailable. Reopening without a network may require reconnection before private cloud records can open; local drafts and pending writes remain stored. Clearing app/browser storage loses access to an anonymous space; cross-device account recovery is outside this version.
+
+## Boundaries
+
+- Nutrition is estimated and user-reviewable. Calorie references are editable examples, not personal prescriptions.
+- Supported reports: JPEG/PNG and unlocked, text-based PDFs up to 3 pages and 6 MB. Scanned PDFs need clear page images or manual entry. Exact qualitative/bounded values and missing units stay intact.
+- Intervals come from the source lab. Earlier values are listed only for the same marker and exact unit; different lab methods may still make comparison inappropriate.
+- Voice requires an available device/browser speech service and permission. Unavailable capture has text/gallery/manual fallbacks.
+- Free model availability and rate limits change. Input is retained when AI fails. The current preview model is listed for retirement on 31 December 2026; switching its Convex variables requires no app rebuild.
+- This is an adult general-wellbeing prototype, not a diagnostic service.
+
+## Architecture and evidence
+
+`apps/mobile` owns native UI, permissions, editable drafts and the local queue. `packages/convex` owns authenticated records, daily aggregation, files, AI policy/jobs and the Convex Agent conversation. `packages/domain` contains shared validation and calculations. Convex deliberately replaces the source brief's SQL suggestion following the owner's explicit stack choice; Firebase is unnecessary for this implementation.
+
+See [verification evidence](docs/VERIFICATION.md), [design system](docs/DESIGN_SYSTEM.md), [implementation plan](plans/IMPLEMENTATION.md) and [continuation handoff](docs/HANDOFF.md). The synthetic report in `output/pdf` is labelled as invented test data and is not a clinical reference.
+
+Public GitHub: https://github.com/debsouryadatta/Tenday . Release APK, hosted-preview and recording links will be added after final native verification.
