@@ -3,6 +3,7 @@ import { paginationOptsValidator } from 'convex/server';
 import { query, mutation, internalQuery } from './_generated/server';
 import { owner, requireOwned, bounded } from './lib/access';
 import { goalV, mealV, reportV } from './lib/validators';
+import { qualitativeGuidance } from './lib/assistantText';
 import {
   daySchema,
   goalSchema,
@@ -88,7 +89,12 @@ export const today = query({
             meals.map((entry) => entry.meal),
           )
         : null,
-      insight: insight?.revision === profile?.revision ? insight : null,
+      insight:
+        insight &&
+        insight.revision === profile?.revision &&
+        qualitativeGuidance(insight.text, insight.basis)
+          ? insight
+          : null,
     };
   },
 });

@@ -15,6 +15,7 @@ import {
 import { AppStateProvider } from '../lib/app-state';
 import { Banner, Button, Loading, Screen } from '../components/ui';
 import { c } from '../theme/tokens';
+import { CONVEX_URL } from '../constants';
 
 export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
   const router = useRouter();
@@ -33,7 +34,7 @@ export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
   );
 }
 
-const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
+const convex = new ConvexReactClient(CONVEX_URL);
 const storage =
   Platform.OS === 'web'
     ? undefined

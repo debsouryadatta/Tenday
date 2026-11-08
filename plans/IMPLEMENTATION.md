@@ -180,4 +180,8 @@ The public repo has meaningful commits, a committed lockfile, reproducible setup
 - A complete: scope, separate services, real anonymous identity and signed native launch.
 - B complete: real text/photo analysis, editable review and portion maths, confirmation/history, Today aggregation, durable drafts and offline pending/reconnect.
 - C complete: contextual Agent conversation, visible preferences, grounded daily guidance, PDF/image reports, exact-value review, private source retrieval and owner isolation.
-- D delivered as a preview: 29 tests, lint/types, web export, signed 58.47 MiB APK, activity-recreation regression checks, enlarged text, artifact scan, public-safe screenshots and short recording. Physical microphone/camera capture and a full software-keyboard check remain device limitations, not claims of successful emulator testing. The private Sites preview is durably hosted; the public web ZIP is portable. GitHub’s inherited domain needs separate DNS repair.
+- D delivered as a preview: 29 tests, lint/types, web export, signed 58.47 MiB APK, activity-recreation regression checks, enlarged text, artifact scan, public-safe screenshots and short recording. Physical microphone/camera capture and a full software-keyboard check remain device limitations, not claims of successful emulator testing. The owner subsequently requested separate React + Vite web delivery in `apps/web`; Sites is no longer a delivery target.
+
+## Web correction checkpoint
+
+React + Vite + TypeScript web client in `apps/web`, sharing existing Convex ownership/auth/AI policies and domain validators with mobile. Public-URL configuration follows the MemoHack pattern. Four flows, durable drafts/confirmation queue and private-source handling must be verified before replacing the web release archive. The owner handles the unwanted cloud Site deletion; no new hosting or login funnel is requested.

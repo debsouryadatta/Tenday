@@ -5,6 +5,7 @@ import * as Sharing from 'expo-sharing';
 import * as ImagePicker from 'expo-image-picker';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import type { Id } from './backend';
+import { CONVEX_SITE_URL } from '../constants';
 
 export async function uploadFile(
   uri: string,
@@ -18,19 +19,16 @@ export async function uploadFile(
     Platform.OS === 'web' ? await (await fetch(uri)).blob() : new File(uri);
   if (file.size > 6 * 1024 * 1024)
     throw new Error('Choose a file smaller than 6 MB.');
-  const response = await expoFetch(
-    `${process.env.EXPO_PUBLIC_CONVEX_SITE_URL}/files`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': mime,
-        'X-File-Name': name.replace(/[^\w. -]/g, '').slice(0, 120),
-        'X-File-Kind': kind,
-      },
-      body: file,
+  const response = await expoFetch(`${CONVEX_SITE_URL}/files`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': mime,
+      'X-File-Name': name.replace(/[^\w. -]/g, '').slice(0, 120),
+      'X-File-Kind': kind,
     },
-  );
+    body: file,
+  });
   if (!response.ok) throw new Error(await response.text());
   const data = (await response.json()) as { fileId: Id<'files'> };
   return data.fileId;
@@ -68,7 +66,7 @@ export async function openSource(
   token: string | null,
 ) {
   if (!token) throw new Error('Reconnect to open the source.');
-  const url = `${process.env.EXPO_PUBLIC_CONVEX_SITE_URL}/files/${fileId}`;
+  const url = `${CONVEX_SITE_URL}/files/${fileId}`;
   if (Platform.OS === 'web') {
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },

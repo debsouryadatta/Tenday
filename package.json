@@ -8,11 +8,12 @@
     "verify:setup": "node scripts/verify-setup.mjs",
     "dev:backend": "pnpm --filter @tenday/convex dev",
     "test": "vitest run",
-    "lint": "eslint apps/mobile/src packages/convex/src packages/domain/src",
-    "typecheck": "pnpm --filter @tenday/mobile typecheck && pnpm --filter @tenday/convex exec tsc --noEmit --project src/tsconfig.json",
+    "lint": "eslint apps/mobile/src apps/web/src packages/convex/src packages/domain/src",
+    "typecheck": "pnpm --filter @tenday/web typecheck && pnpm --filter @tenday/mobile typecheck && pnpm --filter @tenday/convex exec tsc --noEmit --project src/tsconfig.json",
     "verify": "pnpm verify:setup && pnpm lint && pnpm typecheck && pnpm test",
-    "build:web": "pnpm --filter @tenday/mobile build:web",
-    "build:android": "node scripts/build-android.mjs"
+    "build:web": "pnpm --filter @tenday/web build",
+    "build:android": "node scripts/build-android.mjs",
+    "dev:web": "pnpm --filter @tenday/web dev"
   },
   "engines": {
     "node": ">=22"

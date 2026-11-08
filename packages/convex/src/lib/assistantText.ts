@@ -13,3 +13,12 @@ export function checkedAssistantText(text: string, hasReports: boolean) {
   }
   return value;
 }
+
+// Progress arithmetic belongs to the deterministic progress component. The
+// short model-written tip must not claim counts or promise goal completion.
+export function qualitativeGuidance(text: string, basis: string) {
+  const value = `${text} ${basis}`;
+  return !/\d|\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|remaining|on track)\b|\b(?:reach|meet|hit|complete|achieve)\w*\b.{0,35}\b(?:goal|target)\b/i.test(
+    value,
+  );
+}

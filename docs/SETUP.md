@@ -1,6 +1,6 @@
 # Tenday setup
 
-The pnpm workspace contains `apps/mobile` (Expo SDK 58 / React Native 0.88), `packages/convex` (Convex 1.49) and a small shared `packages/domain`. The backend implements anonymous authentication, owner-scoped records, private source routes, AI jobs, rate limiting and the Convex Agent component. Firebase is unnecessary.
+The pnpm workspace contains `apps/mobile` (Expo SDK 58 / React Native 0.88), `apps/web` (React 19 / Vite 8 / TypeScript), `packages/convex` (Convex 1.49) and a small shared `packages/domain`. The backend implements anonymous authentication, owner-scoped records, private source routes, AI jobs, rate limiting and the Convex Agent component. Firebase is unnecessary.
 
 The original machine is already connected to the separate Tenday development deployment `fleet-hedgehog-420`. Its public repository is https://github.com/debsouryadatta/Tenday. The authorised OpenRouter key is configured server-side. Independent Tenday auth and Android signing material live in ignored `.local/`; preserve them. Never use another app’s deployment or signing credentials.
 
@@ -17,19 +17,18 @@ The original machine is already connected to the separate Tenday development dep
 
 ### Builds and verification
 
-- `pnpm verify`: tracked-file/privacy checks, lint, both typechecks and domain/backend tests. Tests run without live inference or cloud secrets.
-- `pnpm build:web`: static export under `apps/mobile/dist`, with bounded Metro workers. Use `pnpm --filter @tenday/mobile exec expo serve --port 8083` to serve it locally. Local HTTP cannot provide every camera/microphone browser feature.
+- `pnpm verify`: tracked-file/privacy checks, lint, all three TypeScript checks and domain/backend tests. Tests run without live inference or cloud secrets.
+- `pnpm dev:web`: React Vite dev server on port 5173. `pnpm build:web` typechecks and builds `apps/web/dist`; `pnpm --filter @tenday/web preview` serves the production build on port 4173.
 - `pnpm build:android`: regenerates native Android configuration, then builds a minified/resource-shrunk release with two Gradle workers and an independent Tenday signing key. Output is `output/android/Tenday.apk`. Requires JDK 21, the SDK packages selected by Expo 58, and accepted Android SDK licenses. The first native build downloads/compiles toolchains; subsequent builds use caches. No Expo cloud account is required for this local delivery.
 - The release script reads private signing properties from `TENDAY_SIGNING_PROPERTIES`, defaulting to `.local/android-signing.properties`. It never prints passwords. `apps/mobile/android` remains generated and ignored; source configuration lives in `app.json` and the local-signing config plugin.
-- For project-path web hosting set `TENDAY_WEB_BASE_URL=/Tenday` before export. GitHub Actions builds this path and publishes the Pages artifact. A `404.html` SPA fallback supports reloading client routes; unknown static paths may retain GitHub Pages' HTTP 404 while the client routes render normally.
+- For deployment under a subpath, set `TENDAY_WEB_BASE_URL=/your-path/` before building. React Router uses the matching basename. Your host must serve `index.html` for client routes; Vercel rewrites are included at `apps/web/vercel.json`.
 
-GitHub Actions contains separate verify and web-preview workflows. They use public backend addresses only, never the OpenRouter or signing secrets. The preview uses the existing GitHub Pages account/domain; it does not alter DNS or the owner's other sites.
+### Web configuration and delivery
 
+The standalone web app lives under `apps/web`, alongside the Expo Android app. Both `src/constants/index.ts` files contain only the public Tenday Convex cloud/site URLs. Optional overrides are `VITE_CONVEX_URL` / `VITE_CONVEX_SITE_URL` for web and `EXPO_PUBLIC_CONVEX_URL` / `EXPO_PUBLIC_CONVEX_SITE_URL` for mobile. AI and signing secrets stay server-side. `.env.example` documents these public addresses. For a different deployment, override both addresses together.
 
-### Preview hosting
+The web app uses Convex Auth anonymous identity automatically. There is no ChatGPT login. Each installation/browser origin has its own private space; they do not share health records merely because both connect to the same backend. Draft text/confirmed pending writes stay in owner-scoped localStorage; selected files stay in IndexedDB until confirmed or removed. Clearing browser storage loses access.
 
-The [private HTTPS preview](https://tenday-preview.debsourya.chatgpt.site) is hosted through Sites with owner-only access and does not depend on this machine staying online. It serves the unchanged root-path Expo export and uses the same private Convex backend. This is a separate frontend origin, so it opens its own anonymous space.
+Use HTTPS for a deployed app, or localhost for development. Browser camera and speech availability varies; permission is requested only at capture, with file/text/manual fallbacks. AI and private cloud reads require a connection.
 
-Site ID: `appgprj_6af0093572cc81918d419ab30f6665a1`. The isolated hosting checkout is ignored under `.local/sites-preview`; its repository includes only the audited public static export, a README linking canonical app source, and `.openai/hosting.json`. Update it with the Sites publishing skill, preserving project identity and audience. Source credentials are short-lived and passed through helper stdin only; no token is stored in project files. Do not copy the private root `.local` directory into any archive.
-
-GitHub Pages inherits the account’s existing custom domain and redirects to an unresolved HTTP address. Its workflow/deployment passed, but that address is not usable until domain/DNS settings are separately repaired. Tenday blocks public HTTP before opening authentication. The portable web ZIP can be deployed to any HTTPS static host; project-path hosting requires rebuilding with the base-path variable.
+GitHub Actions verifies the workspace and builds a portable Vite artifact. It does not publish to Sites or change DNS. The earlier Sites hosting wrapper and archive were removed; the owner is handling deletion of the cloud Site directly. No external submission has been sent.

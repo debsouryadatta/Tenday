@@ -35,7 +35,7 @@ The table above records bootstrap only. Subsequent product evidence is recorded 
 - Camera denial: the real permission dialog was denied; capture stayed open with “Camera access is off. Choose a photo or describe your meal instead.”
 - Revised report explanation: live reply preserved all four results, compared only against supplied lab intervals, and said comparison was unavailable for the bounded result without an interval. A narrow server output check rejects the overconfident clinical phrases discovered during testing before saving replies; it is not a claim of medical validation.
 - `pnpm verify` passed: setup/privacy checks, lint, mobile/backend TypeScript and 29 tests. GitHub Verify and Publish web preview workflows also passed for commit `6856df4`.
-- The earlier temporary HTTPS preview returned HTTP 200. The final unchanged export was published through Sites; its native deployment result confirmed success at the private HTTPS URL. The export is also packaged as `Tenday-web.zip`. GitHub Pages deployed, but redirects to the owner’s existing custom domain, which failed DNS resolution. No DNS/global site settings were changed; the web app refuses public insecure HTTP before authentication.
+- Earlier Expo web-export and hosting checks are historical. The owner subsequently requested a separate React + Vite + TypeScript web app and no Sites hosting. The current web build and verification are recorded below.
 
 ### Remaining device evidence
 
@@ -43,7 +43,7 @@ Actual microphone transcription and camera hardware capture cannot be tested on 
 
 The Android media provider first displayed an ANR under compilation load, recovered after dismissing the system alert, and then returned the selected photo. Later, `agent-device open app.tenday.companion --relaunch` reported “process remained running after close”; the instructed `--debug` retry reported “remained foreground after close” (`android-app-close-timeout`, 2 seconds). Device automation stopped at that point as required by tool policy. After the owner asked for direct recovery, the Device tool restored airplane/Wi-Fi settings and foreground open succeeded; an unrelated WebView Shell ANR was dismissed. Checks resumed through the same bound helper, with no adb UI bypass. An install/update restart preserved the session, one confirmed meal and the confirmed report.
 
-The first T3 browser open and its retry failed with the Ubuntu AppArmor restriction; no host security changes were made. CUA browser access was unavailable. Android's WebView shell, controlled through the T3 Device panel, provided the web UI fallback.
+The first T3 browser open and its retry failed with the Ubuntu AppArmor restriction; the initial web evidence used Android WebView through the T3 Device panel. Later, the owner explicitly requested the official T3 browser setup. It installed only T3’s scoped Chrome AppArmor profile, preserving the enabled global user-namespace restriction. T3 preview then opened the local Vite app successfully.
 
 Food-photo test credit: [Eggerøre.jpg](https://commons.wikimedia.org/wiki/File:Egger%C3%B8re.jpg), NorwegianMarcus (colour-balance revision by Hohum), [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). The downloaded image was used for recognition testing, without edits, and is not seeded into normal app data or bundled into the app.
 
@@ -51,3 +51,22 @@ Food-photo test credit: [Eggerøre.jpg](https://commons.wikimedia.org/wiki/File:
 ### Activity recreation regression
 
 The crash log identified two real navigation crashes after camera-permission/font configuration changes: Expo Router’s shared imperative router was unbound during Android activity recreation. Calls were migrated to screen-scoped `useRouter()` instances throughout the app. Lint/mobile TypeScript and the signed rebuild passed. Reproducing font-size activity recreation then opening the goal sheet passed without a new crash. A second issue was fixed by using the screen navigator for parameter clearing/back checks: after another recreation, report → Understand → Send completed with the persisted reply, cleared composer and Send button, without a false retry state. Chat now follows newly saved messages and errors stay beside the composer. Earlier “escaped app” helper errors in this sequence were symptoms of this crash, not sufficient evidence of a tool-only issue.
+
+## Standalone Vite web correction — 8 November 2026
+
+- `apps/web` is React + Vite + TypeScript, alongside Expo mobile. Both clients connect to the existing owner-scoped Convex backend using public constants with environment overrides. No Sites SDK, hosting wrapper, cloud credentials or new storage service is required.
+- `pnpm verify` passed with web/mobile/backend TypeScript, lint and 31 domain/backend tests. Two added regression cases reject AI-written progress arithmetic/completion claims while allowing qualitative, context-grounded guidance. Older cached tips containing those claims are hidden. The deterministic progress component owns counts/totals.
+- T3 browser successfully opened the actual Vite app at localhost:5173 after the owner-authorised official browser setup. Goal onboarding and preference persistence passed.
+- Real free-model text capture produced an editable three-item meal draft, separate from saved records. Save updated Today to one meal / 360 kcal. Editing the toast quantity to `0.5` changed the review to 280 kcal; confirmation persisted through a page reload without a duplicate meal.
+- PDF upload, live extraction and review preserved all four exact synthetic values (`92 mg/dL`, `13.8 g/dL`, `<5 mg/L`, `Negative` with no unit). No report appeared in history before explicit confirmation. It then appeared with four confirmed values and its source. Bounded/qualitative readings correctly show no numeric comparison.
+- Authenticated source download completed (2,126 bytes); its SHA-256 matched the original synthetic PDF exactly. Existing backend isolation tests cover unauthenticated/other-owner access.
+- Desktop 1280px and phone 390px layouts were visually checked. Desktop uses a bounded dialog; phone uses a bottom sheet with a visible confirmation footer. The checked phone pages had no horizontal overflow.
+- Vite dev-server privacy checks returned HTTP 403 for `.local/source-brief.txt`, root `.env.local` and `.git/config`, without printing file content.
+- During development a Vite restart interrupted module loading; reloading restored the same anonymous session/report. A browser before-unload prompt also protected an in-flight confirmation; accepting/reloading recovered the durable queue and saved edit.
+- The existing daily guidance allowance was reached during repeated edit checks; Today kept real calculated progress and a clearly generic next-step fallback. No paid fallback or quota increase was enabled.
+
+This browser pass does not claim successful physical camera or microphone capture, or a full browser-offline crash/relaunch test. Native evidence and backend idempotency/isolation checks remain recorded above.
+
+- Report → Understand opened a focused, editable question; the route state was cleared immediately while the report ID stayed in the private local draft. Send returned a real persisted explanation grounded in the supplied values/intervals, cleared the composer and removed report focus. No extra record was created by chat.
+
+- Confirmed the reloaded Today value is exactly 280 kcal with a single meal. An unsent chat draft survived leaving/reopening Assistant, and the completed report focus did not reappear.

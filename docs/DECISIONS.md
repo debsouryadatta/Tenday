@@ -9,7 +9,7 @@
 | Colour direction | Calm sage, forest-green primary, light default |
 | Design patterns | MemoHack mobile system adapted to this brand |
 | Product reference | Muse's personal assistance + Cal AI's effortless meal capture |
-| Frontend | Expo, React Native, TypeScript |
+| Frontend | Expo/React Native mobile; separate React + Vite + TypeScript web app in `apps/web` |
 | Backend | Convex; latest instruction deliberately supersedes source brief's SQL suggestion |
 | AI | OpenRouter; reuse only the explicitly authorised local key |
 | Repository | GitHub repo named Tenday; public as required by the source brief |
@@ -42,3 +42,11 @@ The handoff is prepared before feature implementation. Consult `docs/SETUP.md` f
 - AI spend: free-only. No paid inference, paid fallback, credit purchase or automatic top-up is authorised.
 - AI configuration: choose current suitable free OpenRouter models; model IDs must be configurable through server-side Convex environment variables.
 - Initial gate is complete. Proceed autonomously within the four approved flows and raise only material blockers.
+
+## Web delivery correction — 8 November 2026
+
+- The owner explicitly wants the web app as React + Vite + TypeScript under `apps/web`, alongside `apps/mobile`, following MemoHack’s public-URL constants/config pattern. Both clients use the existing Tenday Convex deployment.
+- No ChatGPT Sites building or hosting. The owner is deleting the unwanted Site themselves; the agent supplied deletion instructions and must not ask for ChatGPT sign-in or attempt further Site management. Local hosting wrapper/archive and active Site links are removed.
+- The GitHub web workflow builds a portable Vite artifact, without automatic hosting. No unrelated account domains or DNS settings are changed.
+- Authentication in Tenday remains securely issued anonymous sessions, with no ChatGPT login or signup funnel. Android installations and web origins have separate private identities; clearing storage loses access.
+- The owner explicitly asked to fix the T3 browser. The official `t3 browser setup` installed its narrowly scoped Chrome AppArmor profile; the global user-namespace restriction remains enabled. T3 preview now opens successfully.

@@ -5,7 +5,7 @@ import { paginationOptsValidator } from 'convex/server';
 import { Agent, listMessages, saveMessage } from '@convex-dev/agent';
 import { owner, bounded, requireOwned } from './lib/access';
 import { chatModel, completion } from './lib/models';
-import { checkedAssistantText } from './lib/assistantText';
+import { checkedAssistantText, qualitativeGuidance } from './lib/assistantText';
 import { daySchema, totals } from '../../domain/src/index';
 import type { Doc } from './_generated/dataModel';
 import { z } from 'zod';
@@ -167,7 +167,7 @@ export const guidance = action({
     const { job, run }: { job: Doc<'jobs'>; run: boolean } =
       await ctx.runMutation(internal.jobs.begin, {
         owner: id,
-        operationId: `guidance:${args.day}:${revision}`,
+        operationId: `guidance:v2:${args.day}:${revision}`,
         kind: 'guidance',
       });
     if (!run) return;
@@ -179,7 +179,7 @@ export const guidance = action({
       const raw = await completion(
         'text',
         JSON.stringify(data),
-        `${instruction}\nReturn ONLY JSON {"text":string,"basis":string}. text: ONE short, useful action sentence, at most 110 characters. basis: ONE short reason in warm everyday language, grounded in confirmed goal/meals/reports, at most 140 characters. Avoid repeating the action or counts. Do not expose internal goal type names, ISO dates, database terms, baseline data, or repetitive counts. Do not imply the person ate nothing when no meals were logged. Ask them to log if records are missing.`,
+        `${instruction}\nReturn ONLY JSON {"text":string,"basis":string}. text: a short useful action sentence, at most 110 characters. basis: a short reason in warm everyday language, grounded in confirmed goal/meals/reports, at most 140 characters. Be qualitative: NO numbers, quantities, count words (one, two, etc), remaining counts, or claims about reaching/completing goals. The app calculates progress separately. Do not expose internal goal type names, ISO dates, database terms or baseline data. Do not imply the person ate nothing when no meals were logged. Ask them to log if records are missing.`,
       );
       const output = z
         .object({
@@ -187,6 +187,12 @@ export const guidance = action({
           basis: z.string().min(1).max(140),
         })
         .parse(raw);
+      if (!qualitativeGuidance(output.text, output.basis))
+        throw new Error('Progress claims are not allowed in guidance');
+      checkedAssistantText(
+        `${output.text} ${output.basis}`,
+        context.reports.length > 0,
+      );
       await ctx.runMutation(internal.jobs.setInsight, {
         owner: id,
         day: args.day,

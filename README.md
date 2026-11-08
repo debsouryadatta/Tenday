@@ -22,16 +22,17 @@ pnpm install --frozen-lockfile
 pnpm --filter @tenday/convex exec convex dev
 ```
 
-Follow [setup instructions](docs/SETUP.md) to prepare private anonymous-auth/signing configuration and the public mobile backend addresses, then:
+Follow [setup instructions](docs/SETUP.md) to prepare private anonymous-auth/signing configuration and the public backend addresses, then:
 
 ```sh
 pnpm --filter @tenday/mobile start
+pnpm dev:web
 pnpm verify
 pnpm build:web
 pnpm build:android
 ```
 
-The existing Tenday deployment is already configured on the original machine. No further credentials should be requested there. OpenRouter credentials stay on the backend; mobile environment variables contain only public Convex addresses.
+The existing Tenday deployment is already configured on the original machine. No further credentials should be requested there. OpenRouter credentials stay on the backend; client config contains only public Convex addresses.
 
 ## AI and privacy
 
@@ -52,10 +53,10 @@ A stable local queue retains explicitly confirmed pending writes, with server-si
 
 ## Architecture and evidence
 
-`apps/mobile` owns native UI, permissions, editable drafts and the local queue. `packages/convex` owns authenticated records, daily aggregation, files, AI policy/jobs and the Convex Agent conversation. `packages/domain` contains shared validation and calculations. Convex deliberately replaces the source brief's SQL suggestion following the owner's explicit stack choice; Firebase is unnecessary for this implementation.
+`apps/mobile` owns the Expo/React Native Android app. `apps/web` is a standalone React + Vite + TypeScript app with React Router, native HTML dialogs, browser capture, durable drafts and a confirmation queue. Both share the semantic theme tokens and Convex/domain packages. Public Convex addresses live in each app’s `src/constants/index.ts`, with optional environment overrides. `packages/convex` owns authenticated records, daily aggregation, files, AI policy/jobs and the Convex Agent conversation. `packages/domain` contains shared validation and calculations. Convex deliberately replaces the source brief's SQL suggestion following the owner's explicit stack choice; Firebase is unnecessary for this implementation.
 
 See [verification evidence](docs/VERIFICATION.md), [design system](docs/DESIGN_SYSTEM.md), [implementation plan](plans/IMPLEMENTATION.md) and [continuation handoff](docs/HANDOFF.md). The synthetic report in `output/pdf` is labelled as invented test data and is not a clinical reference.
 
 Public GitHub: https://github.com/debsouryadatta/Tenday .
 
-Preview downloads: [Android APK](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday.apk), [portable web export](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday-web.zip). The [private HTTPS preview](https://tenday-preview.debsourya.chatgpt.site) is hosted through Sites and requires your account access. The web ZIP can be shared or deployed to another HTTPS static host. GitHub Pages deployment succeeds, but the account’s existing custom domain currently fails DNS. Watch the [90-second walkthrough](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday-walkthrough.mp4), edited at 2× with synthetic data. See [verification](docs/VERIFICATION.md) for exact evidence and device limitations.
+Preview downloads: [Android APK](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday.apk), [portable Vite web build](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday-web.zip). Run the web app locally with `pnpm dev:web` (port 5173), or deploy `apps/web/dist` to an HTTPS static host with an SPA fallback. `apps/web/vercel.json` supplies that rewrite for Vercel. No ChatGPT login or Sites hosting is required. Watch the [90-second native walkthrough](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday-walkthrough.mp4), edited at 2× with synthetic data. See [verification](docs/VERIFICATION.md) for exact evidence and device limitations.

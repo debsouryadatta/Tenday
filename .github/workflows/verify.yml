@@ -19,5 +19,5 @@ jobs:
       - run: pnpm verify
       - run: pnpm build:web
         env:
-          EXPO_PUBLIC_CONVEX_URL: https://fleet-hedgehog-420.convex.cloud
-          EXPO_PUBLIC_CONVEX_SITE_URL: https://fleet-hedgehog-420.convex.site
+          VITE_CONVEX_URL: https://fleet-hedgehog-420.convex.cloud
+          VITE_CONVEX_SITE_URL: https://fleet-hedgehog-420.convex.site

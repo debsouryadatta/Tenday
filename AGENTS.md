@@ -29,7 +29,7 @@ The owner explicitly requests one short round of important questions in the new 
 
 ## Engineering and verification
 
-- Use a small workspace: `apps/mobile`, `packages/convex`, optional shared domain package only when genuinely shared. Do not copy the full MemoHack monorepo or stale dependency versions.
+- Use a small workspace: `apps/mobile` (Expo), `apps/web` (React + Vite + TypeScript), `packages/convex` and shared `packages/domain`. The owner explicitly requested a separate web app alongside mobile; do not use ChatGPT Sites for building or hosting it. Do not copy the full MemoHack monorepo or stale dependency versions.
 - One theme-token source and reusable native components. Read the design references before UI work. All screens must use shared primitives.
 - Backend owns confirmed records, aggregation and AI secrets. Validate input and model output. Draft AI output is not a saved meal or report.
 - Every private record and storage operation must be scoped to authenticated or securely issued anonymous identity. A client-chosen profile ID alone is not access control.

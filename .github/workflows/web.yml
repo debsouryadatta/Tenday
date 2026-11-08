@@ -1,4 +1,4 @@
-name: Publish web preview
+name: Build Vite web app
 on:
   push:
     branches: [main]
@@ -6,13 +6,10 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: pages
+  group: web-build
   cancel-in-progress: true
 jobs:
   build:
-    permissions:
-      contents: read
-      pages: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -22,29 +19,8 @@ jobs:
           node-version: 26
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm verify
-      - uses: actions/configure-pages@v6
       - run: pnpm build:web
-        env:
-          EXPO_PUBLIC_CONVEX_URL: https://fleet-hedgehog-420.convex.cloud
-          EXPO_PUBLIC_CONVEX_SITE_URL: https://fleet-hedgehog-420.convex.site
-          TENDAY_WEB_BASE_URL: /Tenday
-      - name: Keep client routes reloadable
-        run: |
-          cp apps/mobile/dist/index.html apps/mobile/dist/404.html
-          touch apps/mobile/dist/.nojekyll
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
-          path: apps/mobile/dist
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5
+          name: Tenday-web
+          path: apps/web/dist

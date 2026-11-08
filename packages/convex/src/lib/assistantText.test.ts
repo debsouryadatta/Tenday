@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkedAssistantText } from './assistantText';
+import { checkedAssistantText, qualitativeGuidance } from './assistantText';
 
 describe('report reply boundary', () => {
   it('rejects overconfident claims seen in the live synthetic report check', () => {
@@ -19,5 +19,30 @@ describe('report reply boundary', () => {
         true,
       ),
     ).toContain('supplied lab interval');
+  });
+});
+
+describe('daily guidance progress boundary', () => {
+  it('rejects model arithmetic and goal-completion claims', () => {
+    expect(
+      qualitativeGuidance(
+        'Log one more meal to reach your goal of 3 confirmed meals today.',
+        'You have logged 1 of 3 target meals.',
+      ),
+    ).toBe(false);
+    expect(
+      qualitativeGuidance(
+        'Log your next meal to reach your goal.',
+        'You are on track.',
+      ),
+    ).toBe(false);
+  });
+  it('allows a qualitative action grounded in saved context', () => {
+    expect(
+      qualitativeGuidance(
+        'Keep your next lunch simple with a familiar protein.',
+        'Your saved preference is for quick vegetarian lunches.',
+      ),
+    ).toBe(true);
   });
 });
