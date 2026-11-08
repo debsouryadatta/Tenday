@@ -26,7 +26,12 @@ for (const [command, args, cwd] of [
   ],
   [
     './gradlew',
-    ['assembleRelease', '--console=plain', '--max-workers=2'],
+    [
+      'assembleRelease',
+      '--console=plain',
+      '--max-workers=2',
+      '-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -XX:ActiveProcessorCount=4',
+    ],
     resolve(root, 'apps/mobile/android'),
   ],
 ]) {

@@ -1,9 +1,11 @@
 import { Redirect, Tabs } from 'expo-router';
 import { Home, MessageCircle, Files } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../../lib/app-state';
 import { Banner, Loading, Screen } from '../../components/ui';
 import { c, type } from '../../theme/tokens';
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
   const { profile, connected } = useApp();
   if (profile === undefined && !connected)
     return (
@@ -30,7 +32,8 @@ export default function TabLayout() {
           backgroundColor: c.screen,
           borderTopColor: c.line,
           paddingTop: 8,
-          minHeight: 68,
+          height: 64 + insets.bottom,
+          paddingBottom: insets.bottom + 4,
         },
         sceneStyle: { backgroundColor: c.screen },
       }}

@@ -16,6 +16,7 @@ import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
 import type * as lib_access from "../lib/access.js";
+import type * as lib_assistantText from "../lib/assistantText.js";
 import type * as lib_models from "../lib/models.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as records from "../records.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   jobs: typeof jobs;
   "lib/access": typeof lib_access;
+  "lib/assistantText": typeof lib_assistantText;
   "lib/models": typeof lib_models;
   "lib/validators": typeof lib_validators;
   records: typeof records;

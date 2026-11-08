@@ -336,6 +336,17 @@ export const context = internalQuery({
     return {
       profile,
       day: args.day,
+      goalDefinition: profile
+        ? {
+            target: profile.goal.target,
+            unit:
+              profile.goal.kind === 'consistency'
+                ? 'confirmed meals per day (not consecutive days or a streak)'
+                : profile.goal.kind === 'protein'
+                  ? 'grams of estimated protein per day'
+                  : 'estimated kcal per day, an editable reference not a prescription',
+          }
+        : null,
       meals: meals.map((m) => ({ title: m.meal.title, items: m.meal.items })),
       reports: reports.map((r) => ({
         id: r._id,
