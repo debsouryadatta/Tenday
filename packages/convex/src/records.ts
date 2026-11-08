@@ -14,7 +14,21 @@ import {
 
 export const session = query({
   args: {},
-  handler: async (ctx) => ({ id: await owner(ctx) }),
+  handler: async (ctx) => {
+    const id = await owner(ctx);
+    const user = await ctx.db.get('users', id);
+    const demo = await ctx.db
+      .query('demoProfiles')
+      .withIndex('by_userId', (q) => q.eq('userId', id))
+      .unique();
+    return {
+      id,
+      name: user?.name ?? 'Your account',
+      email: user?.email ?? null,
+      demo: demo?.slug ?? null,
+      legacy: !!user?.isAnonymous && !demo,
+    };
+  },
 });
 
 export const profile = query({
@@ -342,6 +356,10 @@ export const context = internalQuery({
     return {
       profile,
       day: args.day,
+      sharedDemo: !!(await ctx.db
+        .query('demoProfiles')
+        .withIndex('by_userId', (q) => q.eq('userId', args.owner))
+        .unique()),
       goalDefinition: profile
         ? {
             target: profile.goal.target,

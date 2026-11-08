@@ -101,7 +101,7 @@ export default function AddReport() {
     try {
       let fileId = draft.value.file.fileId;
       if (!fileId) {
-        setBusy('Uploading your private source…');
+        setBusy('Uploading your source…');
         fileId = await uploadFile(
           draft.value.file.uri,
           draft.value.file.name,
@@ -153,7 +153,7 @@ export default function AddReport() {
           throw new Error(
             'Reconnect to attach this source before saving. All your entered values are kept.',
           );
-        setBusy('Attaching your private source…');
+        setBusy('Attaching your source…');
         fileId = await uploadFile(
           draft.value.file.uri,
           draft.value.file.name,

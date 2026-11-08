@@ -1,6 +1,6 @@
 # Tenday setup
 
-The pnpm workspace contains `apps/mobile` (Expo SDK 58 / React Native 0.88), `apps/web` (React 19 / Vite 8 / TypeScript), `packages/convex` (Convex 1.49) and a small shared `packages/domain`. The backend implements anonymous authentication, owner-scoped records, private source routes, AI jobs, rate limiting and the Convex Agent component. Firebase is unnecessary.
+The pnpm workspace contains `apps/mobile` (Expo SDK 58 / React Native 0.88), `apps/web` (React 19 / Vite 8 / TypeScript), `packages/convex` (Convex 1.49) and a small shared `packages/domain`. The backend implements email/password authentication and three shared demo identities, owner-scoped records, private source routes, AI jobs, rate limiting and the Convex Agent component. Firebase is unnecessary.
 
 The original machine is already connected to the separate Tenday development deployment `fleet-hedgehog-420`. Its public repository is https://github.com/debsouryadatta/Tenday. The authorised OpenRouter key is configured server-side. Independent Tenday auth and Android signing material live in ignored `.local/`; preserve them. Never use another app’s deployment or signing credentials.
 
@@ -27,8 +27,22 @@ The original machine is already connected to the separate Tenday development dep
 
 The standalone web app lives under `apps/web`, alongside the Expo Android app. Both `src/constants/index.ts` files contain only the public Tenday Convex cloud/site URLs. Optional overrides are `VITE_CONVEX_URL` / `VITE_CONVEX_SITE_URL` for web and `EXPO_PUBLIC_CONVEX_URL` / `EXPO_PUBLIC_CONVEX_SITE_URL` for mobile. AI and signing secrets stay server-side. `.env.example` documents these public addresses. For a different deployment, override both addresses together.
 
-The web app uses Convex Auth anonymous identity automatically. There is no ChatGPT login. Each installation/browser origin has its own private space; they do not share health records merely because both connect to the same backend. Draft text/confirmed pending writes stay in owner-scoped localStorage; selected files stay in IndexedDB until confirmed or removed. Clearing browser storage loses access.
+Both apps show email/password sign-in and sign-up, followed by Maya, Arjun and Leah demo choices. A personal email/password account opens the same records on Android/web. Each demo intentionally shares its synthetic records and edits with all visitors. The server issues demo sessions only for the three canonical identities. Draft text/confirmed pending writes stay in owner-scoped localStorage on web or AsyncStorage on native; selected web files stay in IndexedDB. Signing in restores personal cloud records after clearing browser storage; local unsent drafts are lost when storage is cleared.
 
 Use HTTPS for a deployed app, or localhost for development. Browser camera and speech availability varies; permission is requested only at capture, with file/text/manual fallbacks. AI and private cloud reads require a connection.
 
 GitHub Actions verifies the workspace and builds a portable Vite artifact. It does not publish to Sites or change DNS. The earlier Sites hosting wrapper and archive were removed; the owner is handling deletion of the cloud Site directly. No external submission has been sent.
+
+### Demo seeding and account maintenance
+
+No new credential is needed for basic email/password auth. The existing Tenday JWT/JWKS configuration and Convex Auth remain in use; passwords are Scrypt-hashed by the supported provider. Sign-up validates names, normalizes/validates email and requires 12–128 password characters. No signup or password is logged by app code. Email verification and reset mail are deliberately not configured in this preview; add a dedicated Tenday email service before production, without copying another app's email keys.
+
+The three demos are created on first entry and hold real database records. Re-entry preserves edits/deletions. Each visitor’s valid local day gets a starter meal set once, without overwriting historical changes. Source PDFs are generated asynchronously with prominent fictional-data labels and stored behind the same authenticated source routes. The example conversation is explicitly labelled, never presented as fresh AI output.
+
+For trusted maintenance only, reset a single shared demo to its baseline:
+
+```sh
+pnpm --filter @tenday/convex exec convex run demo:reset '{"slug":"maya"}'
+```
+
+This is an internal action available to a deployment administrator, not a public client endpoint. It removes that demo's edits/files/conversation and reseeds its canonical identity; all visitors share the reset. Do not use it on personal accounts. The other demo slugs are `arjun` and `leah`.

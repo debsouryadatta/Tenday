@@ -50,3 +50,9 @@ The handoff is prepared before feature implementation. Consult `docs/SETUP.md` f
 - The GitHub web workflow builds a portable Vite artifact, without automatic hosting. No unrelated account domains or DNS settings are changed.
 - Authentication in Tenday remains securely issued anonymous sessions, with no ChatGPT login or signup funnel. Android installations and web origins have separate private identities; clearing storage loses access.
 - The owner explicitly asked to fix the T3 browser. The official `t3 browser setup` installed its narrowly scoped Chrome AppArmor profile; the global user-namespace restriction remains enabled. T3 preview now opens successfully.
+
+## Accounts and shared demos — owner update, 8 November 2026
+
+The owner now explicitly requests real email/password sign-up and sign-in in both apps, with three one-tap shared demo profiles directly below the auth form. This supersedes the no-signup/anonymous-only choice. Build custom Tenday UI on the existing Convex Auth password provider, retaining secure password hashing and signed sessions. Demo identity is issued by a dedicated server provider restricted to three canonical fictional accounts, never by accepting arbitrary owner IDs.
+
+Each shared demo is editable by anyone who enters it, across mobile/web, and contains rich fictional meals, reports/sources, preferences, guidance and labelled example conversations. Clearly identify shared demo mode and keep personal accounts isolated. Personal accounts start empty and can sign in on either platform. Preserve existing anonymous data; do not migrate it into demos. No paid AI or new third-party account is required. Email verification/password recovery are not configured in this preview and need an email-delivery service before public production use.

@@ -4,7 +4,7 @@ export default defineConfig({
     environment: 'edge-runtime',
     maxWorkers: 1,
     testTimeout: 10000,
-    include: ['packages/**/src/**/*.test.ts'],
+    include: ['packages/**/src/**/*.test.ts', 'apps/web/src/**/*.test.tsx'],
     server: {
       deps: {
         inline: [

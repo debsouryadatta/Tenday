@@ -179,8 +179,8 @@ export function GoalPage({ editing = false }: { editing?: boolean }) {
             Voice uses your browser’s speech service.
           </p>
           <p className="muted small">
-            No account to create. Keep this browser’s storage to keep access.
-            Android and each browser origin have separate private spaces.
+            Your account opens the same personal space on Android and web.
+            Shared demos remain separate from personal accounts.
           </p>
         </>
       )}

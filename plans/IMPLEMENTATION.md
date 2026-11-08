@@ -185,3 +185,11 @@ The public repo has meaningful commits, a committed lockfile, reproducible setup
 ## Web correction checkpoint
 
 React + Vite + TypeScript web client in `apps/web`, sharing existing Convex ownership/auth/AI policies and domain validators with mobile. Public-URL configuration follows the MemoHack pattern. Four flows, durable drafts/confirmation queue and private-source handling must be verified before replacing the web release archive. The owner handles the unwanted cloud Site deletion; no new hosting or login funnel is requested.
+
+## Owner-requested account and demo expansion
+
+- Replace automatic anonymous entry with custom email/password sign-in/sign-up screens, followed by three demo-profile choices.
+- Use the established Convex Auth password implementation and a restricted server-issued demo provider; never share personal credentials or permit arbitrary owner selection.
+- Seed three distinct fictional personas with a week of varied meals, current-day progress, comparable dated lab reports with real source PDFs, and explicitly labelled example conversations. All post-entry actions remain real and durable.
+- Add profile identity, demo-mode disclosure, sign-out/switching and owner-scoped drafts/queues. Do not switch identities while confirmed writes are pending.
+- Verify duplicate/concurrent demo entry, cross-platform shared persistence, real signup/signin, wrong-password denial, private/demo isolation, uploads/chat and updated release builds.

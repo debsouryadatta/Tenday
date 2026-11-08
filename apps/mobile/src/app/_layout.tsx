@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Stack, useRouter, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
-import { ConvexReactClient, useConvexAuth } from 'convex/react';
-import { ConvexAuthProvider, useAuthActions } from '@convex-dev/auth/react';
+import { ConvexReactClient } from 'convex/react';
+import { ConvexAuthProvider } from '@convex-dev/auth/react';
 import * as SecureStore from 'expo-secure-store';
 import {
   useFonts,
@@ -16,6 +16,8 @@ import { AppStateProvider } from '../lib/app-state';
 import { Banner, Button, Loading, Screen } from '../components/ui';
 import { c } from '../theme/tokens';
 import { CONVEX_URL } from '../constants';
+import { Authentication } from '../features/auth';
+import { IdentityProvider, useIdentity } from '../lib/auth-session';
 
 export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
   const router = useRouter();
@@ -44,44 +46,14 @@ const storage =
         removeItem: SecureStore.deleteItemAsync,
       };
 function SessionGate({ children }: { children: React.ReactNode }) {
-  const { isLoading, isAuthenticated } = useConvexAuth();
-  const { signIn } = useAuthActions();
-  const [error, setError] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    if (isAuthenticated) return;
-    const timer = setTimeout(() => setError(true), 8000);
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, attempt]);
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      let live = true;
-      void signIn('anonymous').catch(() => {
-        if (live) setError(true);
-      });
-      return () => {
-        live = false;
-      };
-    }
-  }, [isLoading, isAuthenticated, signIn, attempt]);
-  if (isLoading || !isAuthenticated)
-    return error ? (
-      <Screen title="Let’s reconnect">
-        <Banner error>
-          Your private session could not open. Check your connection and retry.
-        </Banner>
-        <Button
-          title="Try again"
-          onPress={() => {
-            setError(false);
-            setAttempt((a) => a + 1);
-          }}
-        />
-      </Screen>
-    ) : (
-      <Loading label="Opening your private space…" />
-    );
-  return children;
+  const identity = useIdentity();
+  if (identity.switching) return <Loading label={identity.switching} />;
+  if (identity.loading) return <Loading />;
+  if (!identity.authenticated || identity.account?.legacy)
+    return <Authentication />;
+  return (
+    <AppStateProvider key={identity.account!.id}>{children}</AppStateProvider>
+  );
 }
 export default function Root() {
   const [fonts, fontError] = useFonts({
@@ -112,8 +84,8 @@ export default function Root() {
   return (
     <ConvexAuthProvider client={convex} storage={storage}>
       <StatusBar style="dark" />
-      <SessionGate>
-        <AppStateProvider>
+      <IdentityProvider>
+        <SessionGate>
           <Stack
             screenOptions={{
               headerShown: false,
@@ -121,6 +93,14 @@ export default function Root() {
             }}
           >
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="account"
+              options={{
+                presentation: 'formSheet',
+                sheetAllowedDetents: [1],
+                sheetGrabberVisible: true,
+              }}
+            />
             <Stack.Screen
               name="onboarding"
               options={{ gestureEnabled: false }}
@@ -151,8 +131,8 @@ export default function Root() {
               }}
             />
           </Stack>
-        </AppStateProvider>
-      </SessionGate>
+        </SessionGate>
+      </IdentityProvider>
     </ConvexAuthProvider>
   );
 }

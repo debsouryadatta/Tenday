@@ -5,7 +5,6 @@ import { useAction, useQuery } from 'convex/react';
 import {
   ArrowUpRight,
   Check,
-  CircleUserRound,
   Plus,
   Sparkles,
   Utensils,
@@ -14,10 +13,8 @@ import { api } from '../../lib/backend';
 import { useApp, ConnectionBanner } from '../../lib/app-state';
 import { useDay } from '../../lib/day';
 import {
-  Brand,
   Button,
   Card,
-  IconButton,
   Loading,
   ProgressRing,
   Screen,
@@ -25,6 +22,7 @@ import {
   Text,
   s,
 } from '../../components/ui';
+import { AccountBar } from '../../features/auth';
 import { MealRow } from '../../features/meal-row';
 import { c, space } from '../../theme/tokens';
 
@@ -73,14 +71,7 @@ export default function Today() {
         />
       }
     >
-      <View style={[s.between, { marginBottom: space.xl }]}>
-        <Brand />
-        <IconButton
-          icon={CircleUserRound}
-          label="Your goal and preferences"
-          onPress={() => router.push('/goal')}
-        />
-      </View>
+      <AccountBar />
       <View style={{ gap: space.sm, marginBottom: space.lg }}>
         <Text variant="title" accessibilityRole="header">
           Your day, a little clearer.

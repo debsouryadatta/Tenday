@@ -2,7 +2,19 @@
 
 The owner wants the complete app built autonomously with short, high-level updates. This file and linked documents preserve the working state across threads.
 
-## Delivered preview — 8 November 2026
+## Current change: accounts and three shared demos
+
+The owner's latest instruction supersedes anonymous-only entry: both apps now have custom email/password sign-up/sign-in, with Maya, Arjun and Leah demo cards directly underneath. Personal accounts use Convex Auth Password (Scrypt), remain isolated and work across Android/web. The `demo` credentials provider only issues one of three canonical server-selected demo identities; it never trusts a caller-supplied owner ID. Existing anonymous records remain separate and are not migrated into public demos.
+
+Demos are intentionally shared/editable by anyone who enters them. Each contains 23 fictional meals across eight days, 3 comparable dated lab reports with generated original PDFs, goal/preferences, a grounded starter suggestion and 8 explicitly labelled example messages. Later user actions and AI replies use the real backend. Shared demo mode is labelled in both apps. No paid AI is enabled.
+
+Sign-out/profile switching lives under Profiles and account. Pending confirmed writes block switching; unsent drafts stay keyed to their owner. The shared platform-independent identity hook is in `apps/mobile/src/lib/auth-session.tsx`, imported by the web client as well. No duplicate auth storage/backend is introduced. Email verification/password recovery are not configured in this preview and require an email-delivery provider before actual-user rollout.
+
+Demo fixtures are in `packages/convex/src/lib/demoData.ts`. Entry/seeding is transactional and idempotent; later logins preserve edits/deletions. A new current day is added once on a later login. Private internal maintenance `demo:reset` can reset one demo, keeping its canonical identity. Never reset personal users or copy private records into demos.
+
+Verification: 40 tests, all three typechecks/lint; live personal signup, case-normalized cross-client signin, wrong-password denial, three shared demo signins, cross-client writes/deletes, arbitrary-owner rejection and 9 generated source PDFs with access checks passed. The first native UI pass covered the sign-in/sign-up forms and demo entry. A session-switch race was found and fixed with a shared, staged sign-out → transport-clear → sign-in → confirmed-owner transition, plus five React lifecycle regression tests. Native verification also found that navigating away before switching remounted the root auth provider; the account sheet now starts the transition without that navigation. Maya → Arjun → Leah switching and sign-out passed on Android. The final APK also passed fresh personal email/password sign-in and Maya → Arjun switching. Refreshed APK, standalone Vite archive and walkthrough are packaged for the existing GitHub preview release. Exact source/checksums are in `output/delivery/BUILD_INFO.md` and `SHA256SUMS.txt`.
+
+## Earlier preview, before the account/demo update — 8 November 2026
 
 The owner’s initial gate is settled: Android APK + web preview, no fixed deadline, free-only OpenRouter AI through server-side configurable model IDs. Continue autonomously for fixes; do not re-ask brand, stack, account or minor engineering choices.
 

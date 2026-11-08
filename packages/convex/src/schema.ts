@@ -5,6 +5,18 @@ import { goalV, mealV, reportV } from './lib/validators';
 
 export default defineSchema({
   ...authTables,
+  demoDays: defineTable({ owner: v.id('users'), day: v.string() }).index(
+    'by_owner_and_day',
+    ['owner', 'day'],
+  ),
+  demoProfiles: defineTable({
+    slug: v.union(v.literal('maya'), v.literal('arjun'), v.literal('leah')),
+    userId: v.id('users'),
+    seededDay: v.string(),
+    version: v.number(),
+  })
+    .index('by_slug', ['slug'])
+    .index('by_userId', ['userId']),
   profiles: defineTable({
     owner: v.id('users'),
     goal: goalV,

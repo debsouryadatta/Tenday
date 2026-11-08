@@ -194,14 +194,14 @@ export function GoalForm({ editing = false }: { editing?: boolean }) {
               not diagnose or prescribe.
             </Text>
             <Text variant="small" color={c.secondary}>
-              Your records are private to this app session. AI actions send the
-              input you choose and relevant confirmed context to OpenRouter and
-              its selected provider. No paid AI is used. Voice uses your
-              device’s speech service.
+              Your personal account stays separate from the shared demos. AI
+              actions send the input you choose and relevant confirmed context
+              to OpenRouter and its selected provider. No paid AI is used. Voice
+              uses your device’s speech service.
             </Text>
             <Text variant="small" color={c.muted}>
-              No account to create. Keep this app’s storage to keep access. Web
-              and Android each have their own private space.
+              Sign in with the same email and password on Android or web to open
+              your personal account. Shared demos stay separate.
             </Text>
           </>
         )}

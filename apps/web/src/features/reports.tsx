@@ -26,6 +26,7 @@ import {
   type ReportInput,
 } from '@tenday/domain';
 import { api, type Id } from '../lib/backend';
+import { useIdentity } from '../../../mobile/src/lib/auth-session';
 import { useApp, errorMessage } from '../lib/app-state';
 import { draftFile, operationId, useDraft } from '../lib/storage';
 import { openSource, uploadFile } from '../lib/files';
@@ -53,6 +54,7 @@ const blankReading = (): Reading => ({
   page: null,
 });
 export function Reports() {
+  const { account } = useIdentity();
   const { results, status, loadMore } = usePaginatedQuery(
     api.records.reports,
     {},
@@ -74,7 +76,11 @@ export function Reports() {
         <Loading />
       ) : results.length ? (
         <>
-          <p className="muted">Reviewed by you. Kept private.</p>
+          <p className="muted">
+            {account?.demo
+              ? 'Shared demo reports'
+              : 'Reviewed by you. Kept private.'}
+          </p>
           <div className="report-grid">
             {results.map((r) => (
               <Link
@@ -213,7 +219,7 @@ export function AddReport() {
       return;
     }
     locked.current = true;
-    setBusy('Uploading your private source…');
+    setBusy('Uploading your source…');
     setError('');
     try {
       const fileId = await attach();

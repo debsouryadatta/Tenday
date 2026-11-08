@@ -14,9 +14,12 @@ import {
   Text,
   s,
 } from '../../components/ui';
+import { AccountBar } from '../../features/auth';
+import { useIdentity } from '../../lib/auth-session';
 import { c, space } from '../../theme/tokens';
 export default function Reports() {
   const router = useRouter();
+  const { account } = useIdentity();
   const { connected } = useApp();
   const { results, status, loadMore } = usePaginatedQuery(
     api.records.reports,
@@ -53,6 +56,7 @@ export default function Reports() {
         />
       }
     >
+      <AccountBar />
       <View style={s.stack}>
         <ConnectionBanner />
         {results.length === 0 ? (
@@ -66,7 +70,11 @@ export default function Reports() {
             <Card tone="sage">
               <View style={s.row}>
                 <ShieldCheck color={c.forest} size={22} />
-                <Text variant="strong">Reviewed by you. Kept private.</Text>
+                <Text variant="strong">
+                  {account?.demo
+                    ? 'Shared demo reports'
+                    : 'Reviewed by you. Kept private.'}
+                </Text>
               </View>
               <Text variant="small" color={c.secondary}>
                 Values are shown with their units and the lab’s own reference

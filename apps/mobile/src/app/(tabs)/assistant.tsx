@@ -21,7 +21,6 @@ import { useDraft } from '../../lib/storage';
 import { useDay } from '../../lib/day';
 import {
   Banner,
-  Brand,
   Button,
   Card,
   Empty,
@@ -31,6 +30,7 @@ import {
   Text,
   s,
 } from '../../components/ui';
+import { AccountBar } from '../../features/auth';
 import { c, space } from '../../theme/tokens';
 
 export default function Assistant() {
@@ -168,8 +168,8 @@ export default function Assistant() {
         </View>
       }
     >
-      <View style={[s.between, { marginBottom: space.lg }]}>
-        <Brand />
+      <AccountBar />
+      <View style={{ alignItems: 'flex-end', marginBottom: space.base }}>
         <View style={s.row}>
           <IconButton
             icon={Settings2}

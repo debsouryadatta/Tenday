@@ -6,7 +6,7 @@ Tenday uses the approved **Carefold** emblem, Inter, forest green, sage and a wh
 
 ## Four complete journeys
 
-- **Find your rhythm:** short goal setup, optional preferences, an editable daily reference and persistent anonymous identity.
+- **Find your rhythm:** email/password sign-up or sign-in, short goal setup, optional preferences and an editable daily reference.
 - **Log a meal:** photo, device/browser speech recognition or text → editable food and portion review → explicit Save. History supports corrections and deletion.
 - **Understand today:** progress from confirmed records, one grounded next step, and a durable contextual conversation. Preferences are visible and editable; AI cannot silently save a meal or change a goal.
 - **Read a report:** private image/text-PDF upload → exact-value review → confirmation → history, original source and plain-language explanation through Assistant.
@@ -22,7 +22,7 @@ pnpm install --frozen-lockfile
 pnpm --filter @tenday/convex exec convex dev
 ```
 
-Follow [setup instructions](docs/SETUP.md) to prepare private anonymous-auth/signing configuration and the public backend addresses, then:
+Follow [setup instructions](docs/SETUP.md) to prepare private auth/signing configuration and the public backend addresses, then:
 
 ```sh
 pnpm --filter @tenday/mobile start
@@ -38,9 +38,13 @@ The existing Tenday deployment is already configured on the original machine. No
 
 AI is **free-only**. `OPENROUTER_TEXT_MODEL` and `OPENROUTER_VISION_MODEL` are server-side Convex variables, currently set to `dots-studio/dots-3-note-preview:free`. Requests cap model prices at zero and disallow collection-based routing; there is no paid fallback or paid PDF OCR. See [model research, configuration and limits](docs/AI.md).
 
-Convex Auth securely issues anonymous sessions. Every health record, action context and file operation derives ownership from the authenticated session. Sources are retrieved through authenticated HTTP, without permanent public storage links. Draft AI output is separate from confirmed records. An upload alone never saves a report.
+Tenday has custom email/password sign-up and sign-in screens on Android and web. Convex Auth hashes passwords with Scrypt and issues signed sessions. The same personal account opens the same records on either platform. Personal accounts start empty and stay separate from the demos. Every record, action context and source-file operation still derives ownership on the backend.
 
-A stable local queue retains explicitly confirmed pending writes, with server-side operation IDs preventing duplicate saves. Offline AI is unavailable. Reopening without a network may require reconnection before private cloud records can open; local drafts and pending writes remain stored. Clearing app/browser storage loses access to an anonymous space; cross-device account recovery is outside this version.
+Three **shared, fictional demo profiles** sit directly below the auth form: Maya (meal rhythm), Arjun (protein awareness) and Leah (energy awareness). Each starts with 23 meals over eight days, 3 dated reports with original labelled PDFs, preferences, a starter suggestion and 8 clearly labelled example messages. Anyone may enter and edit a demo; changes are visible to everyone using that profile across Android/web. Only use sample information there. Subsequent capture, confirmation, upload and AI chat run through the real backend.
+
+Sign out or switch profiles from the account control. Unsent drafts remain scoped to their account; pending confirmed writes must finish or be discarded before switching. The backend prevents duplicate saves and rejects cross-owner access. Offline AI is unavailable; reopening cloud data may require reconnection.
+
+Email addresses are not verified, and password recovery is not configured in this preview. An email-delivery provider and recovery/verification should be configured before opening personal accounts to actual users. Existing anonymous preview records are retained separately; they are not copied into shared demos.
 
 ## Boundaries
 

@@ -13,6 +13,8 @@ import { GoalPage } from './features/goal';
 import { History, Today } from './features/today';
 import { MealPage } from './features/meal';
 import { AddReport, ReportDetail, Reports } from './features/reports';
+import { AccountPage } from './features/auth';
+import { useIdentity } from '../../mobile/src/lib/auth-session';
 import { Assistant } from './features/assistant';
 class PageBoundary extends Component<
   { children: ReactNode },
@@ -42,6 +44,7 @@ class PageBoundary extends Component<
   }
 }
 export function App() {
+  const { account } = useIdentity();
   const { profile, pending, retry, discard } = useApp(),
     location = useLocation();
   if (profile === undefined) return <Loading />;
@@ -72,10 +75,21 @@ export function App() {
             </NavLink>
           ))}
         </nav>
+        <Link
+          className="account-pill"
+          to="/account"
+          aria-label="Profiles and account"
+        >
+          <span className="demo-avatar">{account?.name.slice(0, 1)}</span>
+          <span>
+            <strong>{account?.name}</strong>
+            <small>{account?.demo ? 'Shared demo' : 'Personal account'}</small>
+          </span>
+        </Link>
         <div className="sidebar-foot">
           <ShieldCheck size={21} />
           <p>
-            A private space.
+            {account?.demo ? 'A shared demo.' : 'Your personal space.'}
             <br />A little care, every day.
           </p>
           <Link className="text-link" to="/goal">
@@ -88,10 +102,10 @@ export function App() {
         <Brand />
         <Link
           className="icon-button"
-          aria-label="Your goal and preferences"
-          to="/goal"
+          aria-label="Profiles and account"
+          to="/account"
         >
-          <Settings2 size={22} />
+          <span className="demo-avatar">{account?.name.slice(0, 1)}</span>
         </Link>
       </div>
       <main id="main" className="main-content" tabIndex={-1}>
@@ -124,9 +138,25 @@ export function App() {
             )}
           </Banner>
         ))}
+        {account?.demo && (
+          <div className="demo-mode">
+            <strong>Shared demo · {account.name}</strong>
+            <span>Fictional data. Changes are visible to everyone.</span>
+            <Link to="/account">Switch profile</Link>
+          </div>
+        )}
         <PageBoundary key={location.pathname}>
           <Routes>
             <Route index element={<Today />} />
+            <Route
+              path="account"
+              element={
+                <>
+                  <Today />
+                  <AccountPage />
+                </>
+              }
+            />
             <Route path="history" element={<History />} />
             <Route
               path="goal"
