@@ -10,6 +10,7 @@ import {
   Text as NativeText,
   TextInput,
   View,
+  type ScrollViewInstance,
   type TextProps,
   type TextInputProps,
   type ViewStyle,
@@ -25,7 +26,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import Svg, { Circle } from 'react-native-svg';
 import carefold from '../../assets/carefold.png';
 import { c, radius, space, type } from '../theme/tokens';
@@ -152,6 +153,7 @@ export function Screen({
   back = false,
   close = false,
   trailing,
+  scrollRef,
 }: {
   children: ReactNode;
   footer?: ReactNode;
@@ -161,20 +163,14 @@ export function Screen({
   back?: boolean;
   close?: boolean;
   trailing?: ReactNode;
+  scrollRef?: React.RefObject<ScrollViewInstance | null>;
 }) {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const contents = (
     <View style={s.content}>
       {(back || close) && (
         <View style={[s.between, { marginBottom: space.lg }]}>
-          <IconButton
-            label={close ? 'Close' : 'Go back'}
-            icon={close ? X : ArrowLeft}
-            onPress={() =>
-              router.canGoBack() ? router.back() : router.replace('/')
-            }
-          />
+          <ScreenBackButton close={close} />
           {trailing}
         </View>
       )}
@@ -197,6 +193,7 @@ export function Screen({
       >
         {scroll ? (
           <ScrollView
+            ref={scrollRef}
             style={s.flex}
             contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
@@ -219,6 +216,19 @@ export function Screen({
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+function ScreenBackButton({ close }: { close: boolean }) {
+  const router = useRouter();
+  const navigation = useNavigation();
+  return (
+    <IconButton
+      label={close ? 'Close' : 'Go back'}
+      icon={close ? X : ArrowLeft}
+      onPress={() =>
+        navigation.canGoBack() ? navigation.goBack() : router.replace('/')
+      }
+    />
   );
 }
 export function Card({

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { View, type ScrollViewInstance } from 'react-native';
+import { useRouter, useNavigation, useLocalSearchParams } from 'expo-router';
 import {
   useAction,
   useMutation,
@@ -35,6 +35,14 @@ import { c, space } from '../../theme/tokens';
 
 export default function Assistant() {
   const router = useRouter();
+  const navigation = useNavigation<{
+    setParams(params: {
+      ask?: string;
+      reportId?: Id<'reports'>;
+      request?: string;
+    }): void;
+  }>();
+  const scroll = useRef<ScrollViewInstance>(null);
   const { sessionId, profile, connected } = useApp();
   const day = useDay();
   const draft = useDraft(`tenday:chat:${sessionId}`, {
@@ -55,7 +63,7 @@ export default function Assistant() {
   useEffect(() => {
     if (ask && draftReady) {
       void changeDraft({ text: ask, operationId: operationId() });
-      router.setParams({ ask: undefined });
+      navigation.setParams({ ask: undefined });
     } else if (
       draftReady &&
       reportId &&
@@ -70,7 +78,15 @@ export default function Assistant() {
     } else if (!reportId) {
       handledReport.current = '';
     }
-  }, [ask, draftReady, changeDraft, reportId, selectedReport, request, router]);
+  }, [
+    ask,
+    draftReady,
+    changeDraft,
+    reportId,
+    selectedReport,
+    request,
+    navigation,
+  ]);
   const { results, status, loadMore } = usePaginatedQuery(
     api.assistant.messages,
     {},
@@ -82,6 +98,15 @@ export default function Assistant() {
   const [error, setError] = useState('');
   const [confirmClear, setConfirmClear] = useState(false);
   const sendLock = useRef(false);
+  const newestMessage = results[0]?.id;
+  useEffect(() => {
+    if (!newestMessage) return;
+    const timer = setTimeout(
+      () => scroll.current?.scrollToEnd({ animated: true }),
+      80,
+    );
+    return () => clearTimeout(timer);
+  }, [newestMessage]);
   async function submit() {
     if (sendLock.current || busy || !draft.value.text.trim()) return;
     if (!connected) {
@@ -97,7 +122,7 @@ export default function Assistant() {
         setError(result.error ?? 'Try again shortly.');
       else if (result.status === 'ready') {
         await draft.change({ text: '', operationId: operationId() });
-        router.setParams({ reportId: undefined, request: undefined });
+        navigation.setParams({ reportId: undefined, request: undefined });
       }
     } catch (e) {
       setError(message(e));
@@ -111,8 +136,10 @@ export default function Assistant() {
     .filter((m) => m.text && (m.role === 'assistant' || m.role === 'user'));
   return (
     <Screen
+      scrollRef={scroll}
       footer={
         <View style={s.stack}>
+          {!!error && <Banner error>{error}</Banner>}
           <Input
             label="Message Tenday"
             placeholder="What would make today easier?"
@@ -259,7 +286,6 @@ export default function Assistant() {
             )}
           </Card>
         ))}
-        {!!error && <Banner error>{error}</Banner>}
         <View style={s.row}>
           <View style={{ flex: 1 }}>
             <Button
