@@ -56,4 +56,6 @@ A stable local queue retains explicitly confirmed pending writes, with server-si
 
 See [verification evidence](docs/VERIFICATION.md), [design system](docs/DESIGN_SYSTEM.md), [implementation plan](plans/IMPLEMENTATION.md) and [continuation handoff](docs/HANDOFF.md). The synthetic report in `output/pdf` is labelled as invented test data and is not a clinical reference.
 
-Public GitHub: https://github.com/debsouryadatta/Tenday . Release APK, hosted-preview and recording links will be added after final native verification.
+Public GitHub: https://github.com/debsouryadatta/Tenday .
+
+Preview downloads: [Android APK](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday.apk), [portable web export](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday-web.zip). The [private HTTPS preview](https://tenday-preview.debsourya.chatgpt.site) is hosted through Sites and requires your account access. The web ZIP can be shared or deployed to another HTTPS static host. GitHub Pages deployment succeeds, but the account’s existing custom domain currently fails DNS. Watch the [90-second walkthrough](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday-walkthrough.mp4), edited at 2× with synthetic data. See [verification](docs/VERIFICATION.md) for exact evidence and device limitations.

@@ -173,3 +173,11 @@ Test pure rules and integration boundaries where failures matter. Use a lightwei
 All four journeys work with real persistence and live configured AI or a clearly explained recoverable unavailability state. No normal-path fake analysis, empty tap targets or unlabelled hardcoded personal data. Brand and core primitives are consistent, capture is low friction, values are reviewable, health explanations are non-diagnostic, private records are isolated, and credentials never reach the client/repository.
 
 The public repo has meaningful commits, a committed lockfile, reproducible setup/run/build steps, disclosed scope/stack choices, a verification record and an optimised build plus walkthrough. The owner sees a short handback with links, what works and any remaining limitation. External submission still needs an explicit sending instruction.
+
+
+## Delivery checkpoint — 8 November 2026
+
+- A complete: scope, separate services, real anonymous identity and signed native launch.
+- B complete: real text/photo analysis, editable review and portion maths, confirmation/history, Today aggregation, durable drafts and offline pending/reconnect.
+- C complete: contextual Agent conversation, visible preferences, grounded daily guidance, PDF/image reports, exact-value review, private source retrieval and owner isolation.
+- D delivered as a preview: 29 tests, lint/types, web export, signed 58.47 MiB APK, activity-recreation regression checks, enlarged text, artifact scan, public-safe screenshots and short recording. Physical microphone/camera capture and a full software-keyboard check remain device limitations, not claims of successful emulator testing. The private Sites preview is durably hosted; the public web ZIP is portable. GitHub’s inherited domain needs separate DNS repair.
