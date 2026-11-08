@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useAction, useMutation, usePaginatedQuery } from 'convex/react';
+import {
+  useAction,
+  useMutation,
+  usePaginatedQuery,
+  useQuery,
+} from 'convex/react';
 import { operationId } from '../../lib/operation-id';
 import {
   MessageCircle,
@@ -36,16 +41,35 @@ export default function Assistant() {
     operationId: operationId(),
   });
   const { change: changeDraft, ready: draftReady } = draft;
-  const { ask, reportId } = useLocalSearchParams<{
+  const { ask, reportId, request } = useLocalSearchParams<{
     ask?: string;
     reportId?: Id<'reports'>;
+    request?: string;
   }>();
+  const selectedReport = useQuery(
+    api.records.reportSummary,
+    reportId ? { id: reportId } : 'skip',
+  );
+  const handledReport = useRef('');
   useEffect(() => {
     if (ask && draftReady) {
       void changeDraft({ text: ask, operationId: operationId() });
       router.setParams({ ask: undefined });
+    } else if (
+      draftReady &&
+      reportId &&
+      selectedReport &&
+      handledReport.current !== (request ?? reportId)
+    ) {
+      handledReport.current = request ?? reportId;
+      void changeDraft({
+        text: `Help me understand my report “${selectedReport.title}” from ${selectedReport.day}. Explain the terms in plain language and suggest a useful question for my clinician.`,
+        operationId: operationId(),
+      });
+    } else if (!reportId) {
+      handledReport.current = '';
     }
-  }, [ask, draftReady, changeDraft]);
+  }, [ask, draftReady, changeDraft, reportId, selectedReport, request]);
   const { results, status, loadMore } = usePaginatedQuery(
     api.assistant.messages,
     {},
@@ -72,7 +96,7 @@ export default function Assistant() {
         setError(result.error ?? 'Try again shortly.');
       else if (result.status === 'ready') {
         await draft.change({ text: '', operationId: operationId() });
-        router.setParams({ reportId: undefined });
+        router.setParams({ reportId: undefined, request: undefined });
       }
     } catch (e) {
       setError(message(e));

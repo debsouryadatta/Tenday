@@ -41,8 +41,8 @@ export default function ReportDetail() {
             router.push({
               pathname: '/assistant',
               params: {
-                ask: `Help me understand my report “${report.report.title}” from ${report.day}. Explain the terms in plain language and suggest a useful question for my clinician.`,
                 reportId: report._id,
+                request: String(Date.now()),
               },
             })
           }

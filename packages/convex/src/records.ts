@@ -234,6 +234,15 @@ export const report = query({
     };
   },
 });
+export const reportSummary = query({
+  args: { id: v.id('reports') },
+  handler: async (ctx, args) => {
+    const id = await owner(ctx);
+    const report = await ctx.db.get('reports', args.id);
+    if (!report || report.owner !== id) return null;
+    return { title: report.report.title, day: report.day };
+  },
+});
 export const saveReport = mutation({
   args: {
     operationId: v.string(),

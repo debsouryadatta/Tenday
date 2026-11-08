@@ -89,6 +89,24 @@ export default function Root() {
     Inter_700Bold,
   });
   if (!fonts && !fontError) return <Loading />;
+  if (
+    Platform.OS === 'web' &&
+    typeof window !== 'undefined' &&
+    window.location.protocol !== 'https:' &&
+    !['localhost', '127.0.0.1', '10.0.2.2'].includes(window.location.hostname)
+  ) {
+    return (
+      <Screen
+        title="Open Tenday securely."
+        subtitle="Use the HTTPS preview or Android app before entering personal information."
+      >
+        <Banner>
+          This web address is not using a secure connection. Your private space
+          has not been opened here.
+        </Banner>
+      </Screen>
+    );
+  }
   return (
     <ConvexAuthProvider client={convex} storage={storage}>
       <StatusBar style="dark" />

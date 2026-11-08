@@ -190,6 +190,11 @@ describe('confirmed records and private sessions', () => {
     expect(
       (await a.query(api.records.report, { id })).report.readings[0].value,
     ).toBe('<5');
+    expect(await a.query(api.records.reportSummary, { id })).toEqual({
+      title: report.title,
+      day: report.day,
+    });
+    expect(await b.query(api.records.reportSummary, { id })).toBeNull();
     await expect(b.query(api.records.report, { id })).rejects.toThrow(
       'unavailable',
     );
@@ -198,6 +203,7 @@ describe('confirmed records and private sessions', () => {
     );
     await a.mutation(api.records.deleteReport, { id });
     expect(await t.run((ctx) => ctx.storage.get(storageId))).toBeNull();
+    expect(await a.query(api.records.reportSummary, { id })).toBeNull();
     await expect(a.query(api.records.report, { id })).rejects.toThrow(
       'unavailable',
     );

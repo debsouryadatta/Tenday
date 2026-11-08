@@ -167,12 +167,12 @@ export const guidance = action({
       const raw = await completion(
         'text',
         JSON.stringify(data),
-        `${instruction}\nReturn ONLY JSON {"text":string,"basis":string}. text: one useful next step, at most 220 characters. basis: why in warm everyday language, citing actual confirmed goal/meals/reports, at most 240 characters. Do not expose internal goal type names, ISO dates, database terms, baseline data, or repetitive counts. Do not imply the person ate nothing when no meals were logged. Ask them to log if records are missing.`,
+        `${instruction}\nReturn ONLY JSON {"text":string,"basis":string}. text: ONE short, useful action sentence, at most 110 characters. basis: ONE short reason in warm everyday language, grounded in confirmed goal/meals/reports, at most 140 characters. Avoid repeating the action or counts. Do not expose internal goal type names, ISO dates, database terms, baseline data, or repetitive counts. Do not imply the person ate nothing when no meals were logged. Ask them to log if records are missing.`,
       );
       const output = z
         .object({
-          text: z.string().min(1).max(220),
-          basis: z.string().min(1).max(240),
+          text: z.string().min(1).max(110),
+          basis: z.string().min(1).max(140),
         })
         .parse(raw);
       await ctx.runMutation(internal.jobs.setInsight, {
