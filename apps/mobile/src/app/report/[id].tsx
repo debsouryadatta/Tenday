@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery } from 'convex/react';
 import { useAuthToken } from '@convex-dev/auth/react';
 import { FileText, MessageCircle } from 'lucide-react-native';
@@ -19,6 +19,7 @@ import {
 } from '../../components/ui';
 import { c, space } from '../../theme/tokens';
 export default function ReportDetail() {
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: Id<'reports'> }>();
   const report = useQuery(api.records.report, { id });
   const token = useAuthToken();

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Image, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAction, useMutation, useQuery } from 'convex/react';
 import { useAuthToken } from '@convex-dev/auth/react';
 import { operationId } from '../lib/operation-id';
@@ -57,6 +57,7 @@ export default function MealScreen() {
   return <MealEditor key={id ?? 'new'} existing={existing} />;
 }
 function MealEditor({ existing }: { existing?: Doc<'meals'> | null }) {
+  const router = useRouter();
   const { sessionId, enqueue, connected, toast } = useApp();
   const token = useAuthToken();
   const draft = useDraft<Draft>(

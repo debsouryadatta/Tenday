@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Stack, router, type ErrorBoundaryProps } from 'expo-router';
+import { Stack, useRouter, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { ConvexReactClient, useConvexAuth } from 'convex/react';
@@ -17,6 +17,7 @@ import { Banner, Button, Loading, Screen } from '../components/ui';
 import { c } from '../theme/tokens';
 
 export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  const router = useRouter();
   return (
     <Screen
       title="Let’s get you back."

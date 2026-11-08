@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useAction, useQuery } from 'convex/react';
 import { useAuthToken } from '@convex-dev/auth/react';
 import { operationId } from '../../lib/operation-id';
@@ -29,6 +29,7 @@ type Draft = {
   review?: ReportInput;
 };
 export default function AddReport() {
+  const router = useRouter();
   const { sessionId, connected, enqueue } = useApp();
   const token = useAuthToken();
   const draft = useDraft<Draft>(`tenday:report:${sessionId}`, {

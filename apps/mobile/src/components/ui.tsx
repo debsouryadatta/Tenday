@@ -25,7 +25,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import Svg, { Circle } from 'react-native-svg';
 import carefold from '../../assets/carefold.png';
 import { c, radius, space, type } from '../theme/tokens';
@@ -162,6 +162,7 @@ export function Screen({
   close?: boolean;
   trailing?: ReactNode;
 }) {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const contents = (
     <View style={s.content}>

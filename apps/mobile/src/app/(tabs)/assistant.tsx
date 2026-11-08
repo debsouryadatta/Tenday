@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   useAction,
   useMutation,
@@ -34,6 +34,7 @@ import {
 import { c, space } from '../../theme/tokens';
 
 export default function Assistant() {
+  const router = useRouter();
   const { sessionId, profile, connected } = useApp();
   const day = useDay();
   const draft = useDraft(`tenday:chat:${sessionId}`, {
@@ -69,7 +70,7 @@ export default function Assistant() {
     } else if (!reportId) {
       handledReport.current = '';
     }
-  }, [ask, draftReady, changeDraft, reportId, selectedReport, request]);
+  }, [ask, draftReady, changeDraft, reportId, selectedReport, request, router]);
   const { results, status, loadMore } = usePaginatedQuery(
     api.assistant.messages,
     {},

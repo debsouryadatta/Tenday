@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { View } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useAction, useQuery } from 'convex/react';
 import {
   ArrowUpRight,
@@ -29,6 +29,7 @@ import { MealRow } from '../../features/meal-row';
 import { c, space } from '../../theme/tokens';
 
 export default function Today() {
+  const router = useRouter();
   const { profile, pending, connected, retry, discard } = useApp();
   const day = useDay();
   const data = useQuery(api.records.today, { day });

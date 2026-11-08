@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { usePaginatedQuery } from 'convex/react';
 import { FileText, Plus, ShieldCheck } from 'lucide-react-native';
 import { api } from '../../lib/backend';
@@ -16,6 +16,7 @@ import {
 } from '../../components/ui';
 import { c, space } from '../../theme/tokens';
 export default function Reports() {
+  const router = useRouter();
   const { connected } = useApp();
   const { results, status, loadMore } = usePaginatedQuery(
     api.records.reports,

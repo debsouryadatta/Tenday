@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useMutation } from 'convex/react';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { CircleCheck, ScanLine, Sprout, ArrowRight } from 'lucide-react-native';
 import { type Goal, goalSchema } from '@tenday/domain';
 import { api } from '../lib/backend';
@@ -56,6 +56,7 @@ const options = [
   },
 ];
 export function GoalForm({ editing = false }: { editing?: boolean }) {
+  const router = useRouter();
   const { sessionId, profile, connected } = useApp();
   const draft = useDraft<Goal>(
     `tenday:goal:${sessionId}:${editing ? 'edit' : 'setup'}`,

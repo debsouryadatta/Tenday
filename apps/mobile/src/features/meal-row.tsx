@@ -1,5 +1,5 @@
 import { Utensils } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { totals } from '@tenday/domain';
 import type { Doc } from '../lib/backend';
 import { Row, Text } from '../components/ui';
@@ -10,6 +10,7 @@ export function MealRow({
   entry: Doc<'meals'>;
   showDay?: boolean;
 }) {
+  const router = useRouter();
   return (
     <Row
       icon={Utensils}
