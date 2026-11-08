@@ -70,3 +70,5 @@ This browser pass does not claim successful physical camera or microphone captur
 - Report → Understand opened a focused, editable question; the route state was cleared immediately while the report ID stayed in the private local draft. Send returned a real persisted explanation grounded in the supplied values/intervals, cleared the composer and removed report focus. No extra record was created by chat.
 
 - Confirmed the reloaded Today value is exactly 280 kcal with a single meal. An unsent chat draft survived leaving/reopening Assistant, and the completed report focus did not reappear.
+
+- Cleanup through the real UI removed the synthetic meal (Today returned to zero) and the synthetic report/source (Reports returned to its empty state), and cleared the test conversation. A clear-conversation confirmation was moved above the scrolling transcript so it remains visible.
