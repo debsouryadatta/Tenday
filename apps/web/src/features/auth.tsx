@@ -1,6 +1,17 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff, LogOut, ShieldCheck } from 'lucide-react';
+import {
+  ArrowRight,
+  Camera,
+  Check,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  FlaskConical,
+  LogOut,
+  SlidersHorizontal,
+  Sparkles,
+} from 'lucide-react';
 import {
   DEMO_PROFILES,
   localDay,
@@ -12,41 +23,60 @@ import {
 } from '@tenday/domain';
 import { useIdentity } from '../../../mobile/src/lib/auth-session';
 import { useApp } from '../lib/app-state';
-import { Banner, Brand, Button, Field, Sheet } from '../components/ui';
+import {
+  Avatar,
+  Banner,
+  Brand,
+  BrandTile,
+  Button,
+  Chip,
+  Field,
+  Group,
+  IconButton,
+  Segmented,
+  Sheet,
+} from '../components/ui';
+import { DEMO_TONES } from '../components/shell';
 
 export function DemoCards({
   onChoose,
   busy,
   active,
+  opening,
 }: {
   onChoose(slug: DemoSlug): void;
   busy?: boolean;
   active?: DemoSlug | null;
+  opening?: string;
 }) {
   return (
-    <div className="demo-choices">
-      {DEMO_PROFILES.map((person) => (
-        <button
-          type="button"
-          className="demo-choice"
-          key={person.slug}
-          disabled={busy || active === person.slug}
-          onClick={() => onChoose(person.slug)}
-        >
-          <span className="demo-avatar">{person.initials}</span>
-          <span>
-            <strong>
-              {person.name}
-              <small>
-                {active === person.slug ? 'Current demo' : 'Shared demo'}
-              </small>
-            </strong>
-            <span>{person.title}</span>
-          </span>
-          <ArrowRight size={19} />
-        </button>
-      ))}
-    </div>
+    <Group>
+      {DEMO_PROFILES.map((person) => {
+        const current = active === person.slug;
+        return (
+          <button
+            type="button"
+            className={`demo-row ${busy && opening !== person.slug ? 'dim' : ''}`}
+            key={person.slug}
+            aria-label={`Open ${person.name} shared demo`}
+            aria-busy={opening === person.slug || undefined}
+            disabled={busy || current}
+            onClick={() => onChoose(person.slug)}
+          >
+            <Avatar label={person.initials} size={46} tone={DEMO_TONES[person.slug]} />
+            <span className="demo-text">
+              <strong>{person.name}</strong>
+              <small>{opening === person.slug ? 'Opening…' : person.title}</small>
+            </span>
+            {current ? (
+              <Chip label="Current" icon={Check} tone="lime" />
+            ) : (
+              <ChevronRight size={18} className="muted-icon" />
+            )}
+          </button>
+        );
+      })}
+    </Group>
   );
 }
 export function Authentication() {
@@ -112,149 +142,133 @@ export function Authentication() {
   }
   return (
     <div className="auth-page">
-      <Brand />
-      <div className="auth-grid">
-        <section className="auth-welcome">
-          <span className="eyebrow">A LITTLE CARE, EVERY DAY</span>
+      <section className="auth-hero" aria-hidden>
+        <BrandTile size={72} />
+        <div>
+          <h2>Your day, understood.</h2>
+          <p>Meals in seconds. Reports made clear. One helpful next step, every day.</p>
+        </div>
+        <ul>
+          <li>
+            <span><Camera size={18} strokeWidth={2.2} /></span>
+            Snap, say or type a meal and review the estimate
+          </li>
+          <li>
+            <span><Sparkles size={18} strokeWidth={2.2} /></span>
+            Guidance grounded in your own goal and records
+          </li>
+          <li>
+            <span><FlaskConical size={18} strokeWidth={2.2} /></span>
+            Lab values kept with their original source
+          </li>
+        </ul>
+      </section>
+      <section className="auth-form">
+        <Brand link={false} />
+        <div className="auth-title">
           <h1>
-            Your day.
-            <br />A little clearer.
+            {step === 'signIn' ? 'Welcome\nback.' : 'Make every\nday clearer.'}
           </h1>
-          <p>Meals, meaningful progress and a little help when you need it.</p>
-          <div className="auth-benefits">
-            <span>Log a meal, your way.</span>
-            <span>Understand your everyday patterns.</span>
-            <span>Keep reports and their context together.</span>
-          </div>
-          <img src={`${import.meta.env.BASE_URL}carefold.png`} alt="" />
-        </section>
-        <section className="auth-form">
-          <h2>
-            {step === 'signIn'
-              ? 'Welcome to Tenday.'
-              : 'Make a little space for you.'}
-          </h2>
-          <p className="muted">
-            {step === 'signIn'
-              ? 'Sign in to your space, or explore a demo below.'
-              : 'Create an account to keep your day across devices.'}
+          <p>
+            Snap a meal, understand a lab report and get one helpful next step,
+            every day.
           </p>
-          <div className="auth-tabs" role="group" aria-label="Account action">
-            <button
-              type="button"
-              aria-pressed={step === 'signIn'}
-              disabled={!!busy}
-              onClick={() => {
-                setStep('signIn');
-                setError('');
-              }}
-            >
-              Sign in
-            </button>
-            <button
-              type="button"
-              aria-pressed={step === 'signUp'}
-              disabled={!!busy}
-              onClick={() => {
-                setStep('signUp');
-                setError('');
-              }}
-            >
-              Sign up
-            </button>
-          </div>
-          <form
-            className="stack"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void submit();
-            }}
-          >
-            {step === 'signUp' && (
-              <Field
-                label="Your name"
-                autoComplete="name"
-                value={name}
-                maxLength={60}
-                required
-                disabled={!!busy}
-                onChange={(e) => setName(e.target.value)}
-              />
-            )}
+        </div>
+        <Segmented
+          label="Account action"
+          value={step}
+          disabled={!!busy}
+          onChange={(mode) => {
+            setStep(mode);
+            setError('');
+          }}
+          options={[
+            { value: 'signIn', label: 'Sign in' },
+            { value: 'signUp', label: 'Create account' },
+          ]}
+        />
+        <form
+          className="stack"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submit();
+          }}
+        >
+          {step === 'signUp' && (
             <Field
-              label="Email address"
-              type="email"
-              autoComplete="email"
-              inputMode="email"
-              autoCapitalize="none"
-              value={email}
-              maxLength={254}
+              label="Your name"
+              placeholder="How should Tenday greet you?"
+              autoComplete="name"
+              value={name}
+              maxLength={60}
               required
               disabled={!!busy}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
             />
-            <div className="password-field">
-              <Field
-                label="Password"
-                type={show ? 'text' : 'password'}
-                autoComplete={
-                  step === 'signIn' ? 'current-password' : 'new-password'
-                }
-                value={password}
-                maxLength={128}
-                required
-                disabled={!!busy}
-                hint={
-                  step === 'signUp'
-                    ? 'Use at least 12 characters. A long phrase works well.'
-                    : undefined
-                }
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                aria-label={show ? 'Hide password' : 'Show password'}
-                onClick={() => setShow(!show)}
-              >
-                {show ? <EyeOff size={19} /> : <Eye size={19} />}
-              </button>
-            </div>
-            {(error || identity.error) && (
-              <Banner error>{error || identity.error}</Banner>
-            )}
-            <Button
-              type="submit"
-              icon={ArrowRight}
-              busy={busy === 'account'}
-              disabled={!!busy}
-            >
-              {step === 'signIn' ? 'Sign in' : 'Create account'}
-            </Button>
-          </form>
-          <div className="demo-divider">
-            <span>Or take a look around</span>
-          </div>
-          <h3>Choose a demo profile</h3>
-          <p className="small muted">
-            Fictional people. Real, editable app flows.
-          </p>
-          <DemoCards busy={!!busy} onChoose={(slug) => void submit(slug)} />
-          {busy && busy !== 'account' && (
-            <p className="small muted" role="status">
-              Opening {DEMO_PROFILES.find((p) => p.slug === busy)?.name}’s demo…
-            </p>
           )}
-          <p className="demo-disclosure">
-            Shared demos are public: everyone can see and change their records.
-            Use sample information only.
-          </p>
-          <p className="auth-note">
-            <ShieldCheck size={16} />
-            Your personal account stays separate from the demos.
-          </p>
-        </section>
-      </div>
+          <Field
+            label="Email"
+            placeholder="you@example.com"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            autoCapitalize="none"
+            value={email}
+            maxLength={254}
+            required
+            disabled={!!busy}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Field
+            label="Password"
+            placeholder={step === 'signUp' ? 'At least 12 characters' : 'Your password'}
+            type={show ? 'text' : 'password'}
+            autoComplete={step === 'signIn' ? 'current-password' : 'new-password'}
+            value={password}
+            maxLength={128}
+            required
+            disabled={!!busy}
+            hint={
+              step === 'signUp'
+                ? 'A long phrase is easy to remember and hard to guess.'
+                : undefined
+            }
+            onChange={(e) => setPassword(e.target.value)}
+            trailing={
+              <IconButton
+                icon={show ? EyeOff : Eye}
+                label={show ? 'Hide password' : 'Show password'}
+                tone="plain"
+                size={40}
+                onClick={() => setShow(!show)}
+              />
+            }
+          />
+          {(error || identity.error) && (
+            <Banner error>{error || identity.error}</Banner>
+          )}
+          <Button
+            type="submit"
+            trailingIcon={ArrowRight}
+            busy={busy === 'account'}
+            disabled={!!busy}
+          >
+            {step === 'signIn' ? 'Sign in' : 'Create account'}
+          </Button>
+        </form>
+        <div className="divider-label">
+          <span>Or try a demo</span>
+        </div>
+        <DemoCards
+          busy={!!busy}
+          opening={busy && busy !== 'account' ? busy : undefined}
+          onChoose={(slug) => void submit(slug)}
+        />
+        <p className="caption center">
+          Demos are shared and fictional. Anyone can see and change them, so
+          please use sample information only.
+        </p>
+      </section>
     </div>
   );
 }
@@ -263,6 +277,7 @@ export function AccountPage() {
     navigate = useNavigate(),
     { pending } = useApp();
   const blocked = pending.length > 0;
+  const account = identity.account;
   async function move(slug?: DemoSlug) {
     if (blocked) return;
     navigate('/', { replace: true });
@@ -271,8 +286,21 @@ export function AccountPage() {
   }
   return (
     <Sheet
-      title="Your space"
-      subtitle="A little context, and an easy way to switch."
+      hero={
+        <div className="account-hero">
+          <Avatar
+            label={account?.name?.slice(0, 1).toUpperCase() ?? '·'}
+            size={76}
+            tone={account?.demo ? DEMO_TONES[account.demo] : 'ink'}
+          />
+          <h1>{account?.name}</h1>
+          {account?.demo ? (
+            <Chip label="Shared demo profile" tone="lime" />
+          ) : (
+            <p>{account?.email}</p>
+          )}
+        </div>
+      }
       footer={
         <Button
           icon={LogOut}
@@ -285,50 +313,48 @@ export function AccountPage() {
       }
     >
       <div className="stack">
-        <div className="account-summary">
-          <span className="demo-avatar">
-            {identity.account?.name.slice(0, 1)}
-          </span>
-          <div>
-            <h2>{identity.account?.name}</h2>
-            <p className="muted">
-              {identity.account?.demo
-                ? 'Shared demo profile'
-                : identity.account?.email}
-            </p>
-          </div>
-        </div>
-        {identity.account?.demo ? (
-          <Banner>
+        {account?.demo ? (
+          <Banner tone="lime">
             Everyone using this demo can see and change its meals, reports and
             conversation. Keep personal information in your own account.
           </Banner>
         ) : (
-          <p className="muted">
-            Sign in with this email and password on Android or web to open the
-            same personal account.
-          </p>
-        )}
-        {blocked && (
-          <Banner error>
-            Finish or discard your pending entries on Today before switching
-            profiles. Your unsent drafts stay with this account.
+          <Banner>
+            Sign in with the same email and password on Android or the web to
+            open this account anywhere.
           </Banner>
         )}
-        <div>
-          <h3>Explore a different day</h3>
-          <p className="small muted">
-            Switch to a shared demo with a different goal.
-          </p>
-        </div>
+        {blocked && (
+          <Banner error title="Finish pending entries first">
+            Retry or remove the entries waiting on Today before switching.
+            Unsent drafts stay with this account.
+          </Banner>
+        )}
+        <Group>
+          <button
+            type="button"
+            className="row-button"
+            onClick={() => navigate('/goal')}
+          >
+            <span className="row-tile">
+              <SlidersHorizontal size={20} strokeWidth={2} />
+            </span>
+            <span className="row-text">
+              <strong>Goal & preferences</strong>
+              <small>Your daily reference and what Tenday remembers</small>
+            </span>
+            <ChevronRight size={18} className="muted-icon" />
+          </button>
+        </Group>
+        <span className="eyebrow spaced">Switch demo profile</span>
         <DemoCards
-          active={identity.account?.demo}
+          active={account?.demo}
           busy={blocked}
           onChoose={(slug) => void move(slug)}
         />
-        <p className="small muted">
-          Signing out keeps your saved records. In this preview, email
-          verification and password recovery are not enabled.
+        <p className="caption">
+          Signing out keeps your saved records. Email verification and password
+          recovery aren’t enabled in this preview.
         </p>
       </div>
     </Sheet>

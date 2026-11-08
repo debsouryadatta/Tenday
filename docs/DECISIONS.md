@@ -56,3 +56,15 @@ The handoff is prepared before feature implementation. Consult `docs/SETUP.md` f
 The owner now explicitly requests real email/password sign-up and sign-in in both apps, with three one-tap shared demo profiles directly below the auth form. This supersedes the no-signup/anonymous-only choice. Build custom Tenday UI on the existing Convex Auth password provider, retaining secure password hashing and signed sessions. Demo identity is issued by a dedicated server provider restricted to three canonical fictional accounts, never by accepting arbitrary owner IDs.
 
 Each shared demo is editable by anyone who enters it, across mobile/web, and contains rich fictional meals, reports/sources, preferences, guidance and labelled example conversations. Clearly identify shared demo mode and keep personal accounts isolated. Personal accounts start empty and can sign in on either platform. Preserve existing anonymous data; do not migrate it into demos. No paid AI or new third-party account is required. Email verification/password recovery are not configured in this preview and need an email-delivery service before public production use.
+
+## Visual redesign — owner update, 9 November 2026
+
+The owner judged the previous UI as generic and requested a complete visual redesign of every screen in both apps, with no functional change. References: Cal AI (effortless logging, big numeric dashboard, macro tiles) and Apple News (editorial headings, strong type hierarchy, cards with clear structure).
+
+- Palette: **Night & Lime**, chosen by the owner from five options. Near-black ink actions on white, electric lime (`#D7F35A`) as the accent and on-ink highlight, soft lime tint for assistant moments, and distinct protein (coral), carbs (amber) and fat (blue) colours. This supersedes the calm sage/forest palette.
+- Logo: keep the Carefold shape unchanged. Recolour only: black emblem on light surfaces, lime emblem on the black app icon.
+- Web on phone widths must match the mobile app exactly. Wider screens get a dashboard layout with side navigation and multiple columns.
+- Mobile navigation: try both full-screen (no tab bar) and bottom navigation, then choose based on how they look on the device.
+- Assistant mark (owner request, 9 Nov): animated chat-bubble character with eyes and a spark, adapted from MemoHack's mark (blink/glance/hop/twinkle idle, thinking, happy), in Night & Lime. Tab stays "Assistant"; replies are authored by "Tenday".
+- Navigation outcome: both layouts were tested on the emulator; bottom tabs plus a 50px ink + action were chosen (see DESIGN_SYSTEM.md). Android gesture navigation and 3-button navigation were both checked.
+- Android system back previously left the app from pushed screens (no back callback with predictive back on). Fixed by setting `predictiveBackGestureEnabled: false`.

@@ -1,3 +1,5 @@
+import { CircleCheck } from 'lucide-react';
+import { Loading } from '../components/ui';
 import {
   createContext,
   useCallback,
@@ -121,9 +123,7 @@ export function AppState({ children }: { children: ReactNode }) {
   ]);
   if (!session || !ready)
     return (
-      <div className="loading" role="status">
-        Opening your day…
-      </div>
+      <Loading />
     );
   return (
     <Context.Provider
@@ -162,7 +162,8 @@ export function AppState({ children }: { children: ReactNode }) {
       {children}
       {notice && (
         <div className="toast" role="status">
-          {notice}
+          <CircleCheck size={18} strokeWidth={2.4} />
+          <span>{notice}</span>
         </div>
       )}
     </Context.Provider>

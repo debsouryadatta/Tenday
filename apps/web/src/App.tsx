@@ -1,20 +1,14 @@
 import { Component, type ReactNode } from 'react';
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
-import {
-  Files,
-  House,
-  MessageCircle,
-  Settings2,
-  ShieldCheck,
-} from 'lucide-react';
-import { Banner, Brand, Button, Loading } from './components/ui';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import { Compass, TriangleAlert } from 'lucide-react';
+import { Banner, Button, ButtonLink, Empty, Loading } from './components/ui';
+import { Sidebar, TabBar } from './components/shell';
 import { useApp } from './lib/app-state';
 import { GoalPage } from './features/goal';
 import { History, Today } from './features/today';
 import { MealPage } from './features/meal';
 import { AddReport, ReportDetail, Reports } from './features/reports';
 import { AccountPage } from './features/auth';
-import { useIdentity } from '../../mobile/src/lib/auth-session';
 import { Assistant } from './features/assistant';
 class PageBoundary extends Component<
   { children: ReactNode },
@@ -26,123 +20,68 @@ class PageBoundary extends Component<
   }
   render() {
     return this.state.failed ? (
-      <section className="empty">
-        <h1>This page could not open.</h1>
-        <p>
-          It may be unavailable or the connection needs a moment. Your saved
-          records are kept.
-        </p>
-        <Button
-          onClick={() => window.location.assign(import.meta.env.BASE_URL)}
-        >
-          Back to Today
-        </Button>
-      </section>
+      <Empty
+        icon={TriangleAlert}
+        title="Let’s get you back"
+        action={
+          <Button
+            onClick={() => window.location.assign(import.meta.env.BASE_URL)}
+          >
+            Back to Today
+          </Button>
+        }
+      >
+        This page couldn’t open. Your saved records and drafts are safe.
+      </Empty>
     ) : (
       this.props.children
     );
   }
 }
 export function App() {
-  const { account } = useIdentity();
   const { profile, pending, retry, discard } = useApp(),
     location = useLocation();
   if (profile === undefined) return <Loading />;
   if (profile === null) return <GoalPage />;
+  const chat = location.pathname === '/assistant';
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${chat ? 'is-chat' : ''}`}>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <aside className="sidebar">
-        <Brand />
-        <nav aria-label="Main navigation">
-          {[
-            { to: '/', title: 'Today', icon: House },
-            { to: '/assistant', title: 'Assistant', icon: MessageCircle },
-            { to: '/reports', title: 'Reports', icon: Files },
-          ].map((item) => (
-            <NavLink
-              end={item.to === '/'}
-              className={({ isActive }) =>
-                `nav-link ${isActive ? 'active' : ''}`
-              }
-              key={item.to}
-              to={item.to}
-            >
-              <item.icon size={22} />
-              <span>{item.title}</span>
-            </NavLink>
-          ))}
-        </nav>
-        <Link
-          className="account-pill"
-          to="/account"
-          aria-label="Profiles and account"
-        >
-          <span className="demo-avatar">{account?.name.slice(0, 1)}</span>
-          <span>
-            <strong>{account?.name}</strong>
-            <small>{account?.demo ? 'Shared demo' : 'Personal account'}</small>
-          </span>
-        </Link>
-        <div className="sidebar-foot">
-          <ShieldCheck size={21} />
-          <p>
-            {account?.demo ? 'A shared demo.' : 'Your personal space.'}
-            <br />A little care, every day.
-          </p>
-          <Link className="text-link" to="/goal">
-            <Settings2 size={17} />
-            Your preferences
-          </Link>
-        </div>
-      </aside>
-      <div className="mobile-header">
-        <Brand />
-        <Link
-          className="icon-button"
-          aria-label="Profiles and account"
-          to="/account"
-        >
-          <span className="demo-avatar">{account?.name.slice(0, 1)}</span>
-        </Link>
-      </div>
+      <Sidebar />
       <main id="main" className="main-content" tabIndex={-1}>
-        {pending.map((item) => (
-          <Banner key={item.operationId} error={item.status === 'failed'}>
-            <strong>
-              {item.status === 'failed'
-                ? 'An entry needs your attention'
-                : 'An entry is waiting to save'}
-            </strong>
-            <p>
-              {item.error ??
-                'It is kept on this device and will save when connected.'}
-            </p>
-            {item.status === 'failed' && (
-              <div className="row">
-                <Button
-                  variant="secondary"
-                  onClick={() => retry(item.operationId)}
-                >
-                  Retry
-                </Button>
-                <Button
-                  variant="quiet"
-                  onClick={() => discard(item.operationId)}
-                >
-                  Discard pending entry
-                </Button>
-              </div>
-            )}
-          </Banner>
-        ))}
-        {account?.demo && (
-          <div className="demo-mode">
-            <strong>Shared demo · {account.name}</strong>
-            <span>Fictional data. Changes are visible to everyone.</span>
-            <Link to="/account">Switch profile</Link>
+        {pending.length > 0 && (
+          <div className="pending-list">
+            {pending.map((item) => (
+              <Banner
+                key={item.operationId}
+                tone={item.status === 'failed' ? 'error' : 'info'}
+                title={
+                  item.status === 'failed'
+                    ? 'This entry needs attention'
+                    : 'Waiting to save'
+                }
+                action={
+                  item.status === 'failed' ? (
+                    <div className="row">
+                      <Button size="small" onClick={() => retry(item.operationId)}>
+                        Retry
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outline"
+                        onClick={() => discard(item.operationId)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : undefined
+                }
+              >
+                {item.error ?? 'Kept on this device. It saves when you’re connected.'}
+              </Banner>
+            ))}
           </div>
         )}
         <PageBoundary key={location.pathname}>
@@ -200,18 +139,19 @@ export function App() {
             <Route
               path="*"
               element={
-                <section className="empty">
-                  <h1>A small detour.</h1>
-                  <p>This page isn’t here.</p>
-                  <Link className="button primary" to="/">
-                    Back to Today
-                  </Link>
-                </section>
+                <Empty
+                  icon={Compass}
+                  title="A small detour"
+                  action={<ButtonLink to="/">Back to Today</ButtonLink>}
+                >
+                  This page isn’t here.
+                </Empty>
               }
             />
           </Routes>
         </PageBoundary>
       </main>
+      <TabBar />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import React, {
   type ReactNode,
 } from 'react';
 import { View } from 'react-native';
+import { CircleCheck } from 'lucide-react-native';
 import {
   useConvexAuth,
   useConvexConnectionState,
@@ -208,16 +209,26 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           accessibilityLiveRegion="polite"
           style={{
             position: 'absolute',
-            bottom: 90,
+            bottom: 104,
             alignSelf: 'center',
-            maxWidth: 500,
-            marginHorizontal: space.base,
-            padding: space.base,
+            maxWidth: 480,
+            marginHorizontal: space.lg,
+            paddingVertical: space.md,
+            paddingHorizontal: space.base,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: space.sm,
             backgroundColor: c.ink,
-            borderRadius: radius.md,
+            borderRadius: radius.pill,
+            shadowColor: c.ink,
+            shadowOpacity: 0.25,
+            shadowRadius: 14,
+            shadowOffset: { width: 0, height: 6 },
+            elevation: 8,
           }}
         >
-          <Text variant="small" color={c.screen}>
+          <CircleCheck size={18} color={c.lime} strokeWidth={2.4} />
+          <Text variant="smallStrong" color={c.onInk} style={{ flexShrink: 1 }}>
             {notice}
           </Text>
         </View>
@@ -233,9 +244,9 @@ export function useApp() {
 export function ConnectionBanner() {
   const { connected } = useApp();
   return connected ? null : (
-    <Banner>
-      You’re offline. Saved records may be cached; new entries stay on this
-      device until you reconnect.
+    <Banner tone="warning" title="You’re offline">
+      Saved records may be cached. New entries stay on this device until you
+      reconnect.
     </Banner>
   );
 }

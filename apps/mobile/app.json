@@ -4,7 +4,7 @@
     "slug": "tenday",
     "version": "1.0.0",
     "orientation": "default",
-    "icon": "./assets/carefold.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "app.tenday.companion",
@@ -13,13 +13,14 @@
     "android": {
       "package": "app.tenday.companion",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/carefold.png",
-        "backgroundColor": "#FFFFFF"
+        "foregroundImage": "./assets/adaptive-foreground.png",
+        "backgroundColor": "#0C0D0C",
+        "monochromeImage": "./assets/adaptive-foreground.png"
       },
-      "predictiveBackGestureEnabled": true
+      "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/carefold.png",
+      "favicon": "./assets/icon.png",
       "output": "static"
     },
     "plugins": [
@@ -47,12 +48,16 @@
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "buildArchs": ["arm64-v8a", "x86_64"]
+            "buildArchs": [
+              "arm64-v8a",
+              "x86_64"
+            ]
           }
         }
       ],
       "./plugins/with-local-signing.cjs"
     ],
-    "scheme": "tenday"
+    "scheme": "tenday",
+    "backgroundColor": "#FFFFFF"
   }
 }

@@ -1,10 +1,10 @@
 # Tenday brand assets
 
-The approved identity is **Carefold + Tenday**, with a capital T, forest green and calm sage. The owner approved this combination after reviewing five concepts.
+The identity is **Carefold + Tenday**, with a capital T. The emblem shape comes from the approved board and is unchanged. On 9 November 2026 it was recoloured for the Night & Lime palette.
 
-- `approved-carefold-board.png`: approved full logo presentation, including wordmark and icon examples. This is the visual source of truth.
-- `carefold-emblem.png`: standalone emblem for the T3 project and future app identity, derived from the approved board. Compare any refinement against the board before adopting it.
+- `approved-carefold-board.png`: the original approved presentation (forest green). This is the reference for the shape.
+- `carefold-ink.png`: ink `#0C0D0C` emblem on transparent, for light surfaces. The app UI tints `apps/mobile/assets/carefold.png` at runtime.
+- `carefold-emblem.png`: app icon — lime `#D7F35A` emblem on an ink square. Also used as the T3 project icon.
+- App icons: `apps/mobile/assets/icon.png`, `adaptive-foreground.png` (ink background via `app.json`); web `public/favicon.png`, `apple-touch-icon.png`.
 
-The emblem consists of two rounded folded shapes, with a flowing almond-shaped gap. It is not a T monogram, generic leaf, medical cross or chat bubble. Main colour is `#345B44`; soft sage is `#EAF1E7`; optional soft lime is `#DCE9A5`. Preserve a clear margin around the emblem. Use one colour or a reversed variant; no gradient, texture or drop shadow is part of the intended identity.
-
-The current approved board is an AI-generated concept image, not a production vector master. During implementation, prepare clean scalable assets and verify optical fidelity at app-icon and header sizes. Keep the approved board intact for comparison.
+The emblem is two rounded folded shapes with a flowing almond-shaped gap. It is not a T monogram, a leaf, a medical cross or a chat bubble. Use it in one colour with clear space around it: no gradients, textures or shadows. The animated assistant mark (a chat bubble with eyes) is a separate character, not a logo replacement.

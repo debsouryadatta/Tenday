@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAction, useQuery } from 'convex/react';
 import { useAuthToken } from '@convex-dev/auth/react';
 import { operationId } from '../../lib/operation-id';
 import * as DocumentPicker from 'expo-document-picker';
-import { Check, FileUp, ShieldCheck } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Check,
+  ExternalLink,
+  FileText,
+  FileUp,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react-native';
 import { localDay, reportSchema, type ReportInput } from '@tenday/domain';
 import { api, type Id } from '../../lib/backend';
 import { useApp, message } from '../../lib/app-state';
@@ -14,14 +22,22 @@ import { openSource, uploadFile } from '../../lib/files';
 import {
   Banner,
   Button,
-  Card,
+  Group,
+  LinkButton,
   Loading,
+  Row,
   Screen,
   Text,
   s,
 } from '../../components/ui';
 import { blankReading, ReportReview } from '../../features/report-review';
-import { c, space } from '../../theme/tokens';
+import { c, radius, space } from '../../theme/tokens';
+
+const STEPS = [
+  ['Upload', 'A short lab PDF or a clear photo'],
+  ['Review', 'Check each value against the source'],
+  ['Keep', 'Saved with its original, privately'],
+] as const;
 
 type Draft = {
   operationId: string;
@@ -181,23 +197,44 @@ export default function AddReport() {
       locked.current = false;
     }
   }
+  const pickFile = () => {
+    void choose().catch(() =>
+      setError(
+        'The file picker could not open. Try again or enter values manually.',
+      ),
+    );
+  };
   return (
     <Screen
       close
-      title={
-        draft.value.review
-          ? 'Keep the details right.'
-          : 'Your report, made clearer.'
-      }
+      eyebrow={draft.value.review ? 'Review' : 'New report'}
+      title={draft.value.review ? 'Check every value' : 'Add a lab report'}
       subtitle={
         draft.value.review
-          ? 'Check every value against the source before confirming.'
-          : 'Upload a short lab report. You’ll review the values before saving.'
+          ? 'Compare with the source before confirming. Keep exact units and symbols.'
+          : 'We’ll read the values for you to review. Nothing is saved until you confirm.'
+      }
+      trailing={
+        draft.value.review ? (
+          <Button
+            title="Source"
+            icon={ArrowLeft}
+            size="small"
+            variant="secondary"
+            onPress={() => {
+              void draft.change((old) => ({
+                ...old,
+                review: undefined,
+                operationId: operationId(),
+              }));
+            }}
+          />
+        ) : undefined
       }
       footer={
         draft.value.review ? (
           <Button
-            title="Confirm and save report"
+            title={busy || 'Confirm and save'}
             icon={Check}
             onPress={save}
             busy={!!busy}
@@ -205,14 +242,16 @@ export default function AddReport() {
         ) : (
           <>
             <Button
-              title={busy || 'Extract values for review'}
+              title={busy || 'Read values'}
+              icon={Sparkles}
               onPress={run}
               busy={!!busy}
               disabled={!draft.value.file}
             />
             <Button
               title="Enter values manually"
-              variant="secondary"
+              variant="ghost"
+              size="medium"
               onPress={() => {
                 setBusy('');
                 void draft.change((old) => ({
@@ -231,26 +270,32 @@ export default function AddReport() {
         )
       }
     >
-      <View style={s.stack}>
+      <View style={{ gap: space.base }}>
         {!!error && <Banner error>{error}</Banner>}
         {draft.value.review ? (
           <>
             {draft.value.file?.fileId && (
-              <Button
-                title="Check the original source"
-                variant="secondary"
-                onPress={() => {
-                  void openSource(
-                    draft.value.file!.fileId!,
-                    draft.value.file!.name,
-                    token,
-                  ).catch((e) =>
-                    setError(
-                      e instanceof Error ? e.message : 'Source could not open.',
-                    ),
-                  );
-                }}
-              />
+              <Group>
+                <Row
+                  padded
+                  icon={FileText}
+                  title="Check the original"
+                  subtitle={draft.value.file.name}
+                  chevron={false}
+                  trailing={<ExternalLink size={18} color={c.secondary} />}
+                  onPress={() => {
+                    void openSource(
+                      draft.value.file!.fileId!,
+                      draft.value.file!.name,
+                      token,
+                    ).catch((e) =>
+                      setError(
+                        e instanceof Error ? e.message : 'Source could not open.',
+                      ),
+                    );
+                  }}
+                />
+              </Group>
             )}
             <ReportReview
               report={draft.value.review}
@@ -258,66 +303,116 @@ export default function AddReport() {
                 void draft.change((old) => ({ ...old, review }));
               }}
             />
-            <Button
-              title="Back to source selection"
-              variant="secondary"
-              onPress={() => {
-                void draft.change((old) => ({
-                  ...old,
-                  review: undefined,
-                  operationId: operationId(),
-                }));
-              }}
-            />
           </>
         ) : (
           <>
-            <Card tone="sage">
-              <ShieldCheck color={c.forest} size={28} />
-              <Text variant="heading">Your source stays attached.</Text>
-              <Text color={c.secondary}>
-                Keep the report date, exact units, and lab intervals together.
-                Tenday won’t turn a result into a diagnosis.
-              </Text>
-            </Card>
-            <Button
-              title={
-                draft.value.file
-                  ? 'Choose a different source'
-                  : 'Choose PDF or image'
-              }
-              icon={FileUp}
-              variant="secondary"
-              onPress={() => {
-                void choose().catch(() =>
-                  setError(
-                    'The file picker could not open. Try again or enter values manually.',
-                  ),
-                );
-              }}
-              disabled={!!busy}
-            />
-            {draft.value.file && (
-              <Card tone="outline">
-                <Text variant="strong">{draft.value.file.name}</Text>
-                <Text variant="small" color={c.secondary}>
-                  Selected, not yet confirmed.
+            {draft.value.file ? (
+              <View
+                style={[
+                  s.row,
+                  {
+                    gap: space.md,
+                    backgroundColor: c.surface,
+                    borderRadius: radius.xl,
+                    padding: space.base,
+                  },
+                ]}
+              >
+                <View
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 16,
+                    backgroundColor: c.ink,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <FileText size={22} color={c.lime} strokeWidth={2.2} />
+                </View>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text variant="strong" numberOfLines={1}>
+                    {draft.value.file.name}
+                  </Text>
+                  <Text variant="caption" color={c.secondary}>
+                    {draft.value.file.fileId ? 'Uploaded · not saved yet' : 'Selected · not saved yet'}
+                  </Text>
+                </View>
+                {!busy && <LinkButton title="Change" chevron={false} onPress={pickFile} />}
+              </View>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Choose PDF or image"
+                disabled={!!busy}
+                onPress={pickFile}
+                style={({ pressed }) => ({
+                  borderWidth: 1.5,
+                  borderStyle: 'dashed',
+                  borderColor: pressed ? c.ink : c.lineStrong,
+                  backgroundColor: pressed ? c.surface : c.screen,
+                  borderRadius: radius.xl,
+                  paddingVertical: space.xl,
+                  paddingHorizontal: space.lg,
+                  alignItems: 'center',
+                  gap: space.sm,
+                })}
+              >
+                <View
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    backgroundColor: c.ink,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: space.xs,
+                  }}
+                >
+                  <FileUp size={24} color={c.lime} strokeWidth={2.2} />
+                </View>
+                <Text variant="heading">Choose a PDF or image</Text>
+                <Text variant="small" color={c.secondary} style={{ textAlign: 'center' }}>
+                  JPEG or PNG, or a text-based PDF · up to 3 pages, 6 MB
                 </Text>
-              </Card>
+              </Pressable>
             )}
-            {!!busy && (
-              <Banner>
-                {busy} You can close this sheet; your draft is kept.
-              </Banner>
-            )}
-            <View style={{ marginTop: space.sm, gap: space.base }}>
-              <Text variant="small" color={c.secondary}>
-                JPEG/PNG images or text-based PDFs, up to 3 pages and 6 MB. For
-                scanned PDFs, choose clear page images instead.
-              </Text>
-              <Text variant="small" color={c.muted}>
-                AI reads the source you choose when you tap Extract values.
-                Unconfirmed cloud uploads expire after 24 hours.
+            {!!busy && <Banner tone="lime">{`${busy} You can close this sheet; your draft is kept.`}</Banner>}
+            <View style={{ gap: 0, marginTop: space.sm }}>
+              {STEPS.map(([title, body], i) => (
+                <View key={title} style={[s.row, { gap: space.md, alignItems: 'flex-start' }]}>
+                  <View style={{ alignItems: 'center' }}>
+                    <View
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: i === 0 ? c.lime : c.surface,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text variant="smallStrong">{i + 1}</Text>
+                    </View>
+                    {i < STEPS.length - 1 && (
+                      <View style={{ width: 2, height: 22, backgroundColor: c.surfaceStrong }} />
+                    )}
+                  </View>
+                  <View style={{ flex: 1, paddingTop: 4, gap: 1 }}>
+                    <Text variant="smallStrong">{title}</Text>
+                    <Text variant="caption" color={c.secondary}>
+                      {body}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+            <View style={[s.row, { gap: 8, alignItems: 'flex-start', marginTop: space.sm }]}>
+              <ShieldCheck size={16} color={c.secondary} strokeWidth={2.2} style={{ marginTop: 1 }} />
+              <Text variant="caption" color={c.secondary} style={{ flex: 1 }}>
+                AI reads only the file you choose, when you tap Read values. For
+                scanned PDFs, use clear page photos. Unconfirmed uploads expire
+                after 24 hours. Tenday never turns a result into a diagnosis.
               </Text>
             </View>
           </>

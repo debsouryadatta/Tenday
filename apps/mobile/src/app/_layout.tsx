@@ -11,6 +11,7 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
+  Inter_800ExtraBold,
 } from '@expo-google-fonts/inter';
 import { AppStateProvider } from '../lib/app-state';
 import { Banner, Button, Loading, Screen } from '../components/ui';
@@ -23,15 +24,21 @@ export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
   const router = useRouter();
   return (
     <Screen
-      title="Let’s get you back."
-      subtitle="This page could not open. Your confirmed records and local drafts are kept."
+      eyebrow="Something went wrong"
+      title="Let’s get you back"
+      subtitle="This page couldn’t open. Your saved records and drafts are safe."
+      footer={
+        <>
+          <Button title="Try again" onPress={retry} />
+          <Button
+            title="Back to Today"
+            variant="ghost"
+            onPress={() => router.replace('/')}
+          />
+        </>
+      }
     >
-      <Button title="Try again" onPress={retry} />
-      <Button
-        title="Back to Today"
-        variant="secondary"
-        onPress={() => router.replace('/')}
-      />
+      {null}
     </Screen>
   );
 }
@@ -61,6 +68,7 @@ export default function Root() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    Inter_800ExtraBold,
   });
   if (!fonts && !fontError) return <Loading />;
   if (
@@ -71,12 +79,13 @@ export default function Root() {
   ) {
     return (
       <Screen
-        title="Open Tenday securely."
-        subtitle="Use the HTTPS preview or Android app before entering personal information."
+        eyebrow="Secure connection needed"
+        title="Open Tenday securely"
+        subtitle="Use the HTTPS preview or the Android app before entering personal information."
       >
-        <Banner>
-          This web address is not using a secure connection. Your private space
-          has not been opened here.
+        <Banner tone="warning">
+          This address isn’t using a secure connection, so your private space
+          hasn’t been opened here.
         </Banner>
       </Screen>
     );
@@ -90,6 +99,7 @@ export default function Root() {
             screenOptions={{
               headerShown: false,
               contentStyle: { backgroundColor: c.screen },
+              animation: 'slide_from_right',
             }}
           >
             <Stack.Screen name="(tabs)" />
@@ -99,6 +109,7 @@ export default function Root() {
                 presentation: 'formSheet',
                 sheetAllowedDetents: [1],
                 sheetGrabberVisible: true,
+                sheetCornerRadius: 32,
               }}
             />
             <Stack.Screen
@@ -111,7 +122,7 @@ export default function Root() {
                 presentation: Platform.OS === 'web' ? 'modal' : 'formSheet',
                 sheetAllowedDetents: [1],
                 sheetGrabberVisible: true,
-                sheetCornerRadius: 28,
+                sheetCornerRadius: 32,
               }}
             />
             <Stack.Screen
@@ -120,6 +131,7 @@ export default function Root() {
                 presentation: Platform.OS === 'web' ? 'modal' : 'formSheet',
                 sheetAllowedDetents: [1],
                 sheetGrabberVisible: true,
+                sheetCornerRadius: 32,
               }}
             />
             <Stack.Screen
@@ -128,6 +140,7 @@ export default function Root() {
                 presentation: Platform.OS === 'web' ? 'modal' : 'formSheet',
                 sheetAllowedDetents: [1],
                 sheetGrabberVisible: true,
+                sheetCornerRadius: 32,
               }}
             />
           </Stack>

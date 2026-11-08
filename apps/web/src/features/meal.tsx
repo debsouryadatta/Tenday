@@ -3,15 +3,21 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAction, useMutation, useQuery } from 'convex/react';
 import { useAuthToken } from '@convex-dev/auth/react';
 import {
+  ArrowLeft,
+  CalendarClock,
   Camera,
-  ImagePlus,
+  ChevronDown,
+  ChevronUp,
+  Images,
   Mic,
   Square,
   Plus,
   Minus,
   Trash2,
   Check,
-  Utensils,
+  ShieldCheck,
+  Sparkles,
+  X,
 } from 'lucide-react';
 import {
   blankItem,
@@ -31,11 +37,13 @@ import {
   Banner,
   Button,
   Field,
+  IconButton,
   Loading,
   NumberField,
   Sheet,
   TextArea,
 } from '../components/ui';
+import { formatDay } from '../lib/format';
 
 type MealDraft = {
   operationId: string;
@@ -278,54 +286,83 @@ function MealEditor({ existing }: { existing?: Doc<'meals'> | null }) {
       setError(errorMessage(e));
     }
   }
+  const capturing = !!busy || listening;
+  const manual = () =>
+    change((old) => ({
+      ...old,
+      operationId: operationId(),
+      source: 'manual',
+      review: {
+        title: '',
+        day: old.day,
+        time: old.time,
+        source: 'manual',
+        items: [blankItem()],
+        note: '',
+      },
+    }));
+  const removePhoto = () => {
+    void draftFile(fileKey, null);
+    setFile(undefined);
+    change((old) => ({
+      ...old,
+      photoName: undefined,
+      fileId: undefined,
+      source: 'text',
+      operationId: operationId(),
+    }));
+  };
   return (
     <Sheet
+      eyebrow={value.review ? (existing ? 'Saved meal' : 'Review') : 'New meal'}
       title={
         value.review
           ? existing
             ? 'Edit your meal'
             : 'Does this look right?'
-          : 'What’s on your plate?'
+          : 'What are you eating?'
       }
       subtitle={
         value.review
-          ? 'You’re in charge. Adjust anything before saving.'
-          : 'A photo, your voice, or a few words. Whatever is easiest.'
+          ? 'Adjust anything before saving. Nothing is logged until you do.'
+          : 'Snap it, say it or type it. You’ll review an estimate first.'
       }
       backTo={backTo}
+      trailing={
+        value.review && !existing ? (
+          <Button
+            icon={ArrowLeft}
+            size="small"
+            variant="secondary"
+            disabled={!!busy}
+            onClick={() =>
+              change((old) => ({
+                ...old,
+                review: undefined,
+                operationId: operationId(),
+              }))
+            }
+          >
+            Recapture
+          </Button>
+        ) : undefined
+      }
       footer={
         value.review ? (
           <Button icon={Check} busy={!!busy} onClick={save}>
-            Save meal
+            {busy || 'Save meal'}
           </Button>
         ) : (
           <>
             <Button
+              icon={Sparkles}
               busy={!!busy}
               disabled={!value.text.trim() && !value.photoName}
               onClick={run}
             >
-              {busy || 'Review my meal'}
+              {busy || 'Estimate my meal'}
             </Button>
-            <Button
-              variant="secondary"
-              disabled={!!busy}
-              onClick={() =>
-                change((old) => ({
-                  ...old,
-                  operationId: operationId(),
-                  source: 'manual',
-                  review: {
-                    title: '',
-                    day: old.day,
-                    time: old.time,
-                    source: 'manual',
-                    items: [blankItem()],
-                    note: '',
-                  },
-                }))
-              }
-            >
+            <Button variant="ghost" size="medium" disabled={!!busy} onClick={manual}>
               Enter manually
             </Button>
           </>
@@ -334,6 +371,25 @@ function MealEditor({ existing }: { existing?: Doc<'meals'> | null }) {
     >
       <div className="stack">
         {error && <Banner error>{error}</Banner>}
+        {value.photoName && (
+          <div className={`photo-preview ${value.review ? 'small' : ''}`}>
+            {preview ? (
+              <img src={preview} alt="Selected meal" />
+            ) : (
+              <span className="photo-name">{value.photoName}</span>
+            )}
+            {!value.review && (
+              <IconButton
+                icon={X}
+                label="Remove photo"
+                tone="outline"
+                size={38}
+                disabled={!!busy}
+                onClick={removePhoto}
+              />
+            )}
+          </div>
+        )}
         {value.review ? (
           <>
             <fieldset disabled={!!busy}>
@@ -342,13 +398,18 @@ function MealEditor({ existing }: { existing?: Doc<'meals'> | null }) {
                 onChange={(review) => change((old) => ({ ...old, review }))}
               />
             </fieldset>
-            {existing ? (
-              deleting ? (
-                <Banner>
-                  <p>Delete this meal and update your totals?</p>
-                  <div className="row">
+            {existing &&
+              (deleting ? (
+                <div className="confirm-card">
+                  <h3>Delete this meal?</h3>
+                  <p>Your totals for the day will update.</p>
+                  <div className="two-columns">
+                    <Button variant="secondary" size="medium" onClick={() => setDeleting(false)}>
+                      Keep it
+                    </Button>
                     <Button
                       variant="danger"
+                      size="medium"
                       busy={!!busy}
                       onClick={async () => {
                         if (!connected) {
@@ -367,40 +428,21 @@ function MealEditor({ existing }: { existing?: Doc<'meals'> | null }) {
                         }
                       }}
                     >
-                      Delete meal
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => setDeleting(false)}
-                    >
-                      Keep it
+                      Delete
                     </Button>
                   </div>
-                </Banner>
+                </div>
               ) : (
                 <Button
+                  icon={Trash2}
                   variant="danger"
+                  size="medium"
                   disabled={!!busy}
                   onClick={() => setDeleting(true)}
                 >
                   Delete this meal
                 </Button>
-              )
-            ) : (
-              <Button
-                variant="secondary"
-                disabled={!!busy}
-                onClick={() =>
-                  change((old) => ({
-                    ...old,
-                    review: undefined,
-                    operationId: operationId(),
-                  }))
-                }
-              >
-                Back to capture
-              </Button>
-            )}
+              ))}
           </>
         ) : (
           <>
@@ -425,71 +467,81 @@ function MealEditor({ existing }: { existing?: Doc<'meals'> | null }) {
                 e.target.value = '';
               }}
             />
-            <Button
-              icon={Camera}
-              variant="quiet"
-              disabled={!!busy || listening}
-              onClick={() => camera.current?.click()}
-            >
-              Take a photo
-            </Button>
-            <div className="two-columns">
-              <Button
-                icon={ImagePlus}
-                variant="secondary"
-                disabled={!!busy || listening}
-                onClick={() => gallery.current?.click()}
+            {!value.photoName && (
+              <button
+                type="button"
+                className="capture-hero"
+                disabled={capturing}
+                onClick={() => camera.current?.click()}
               >
-                Choose photo
-              </Button>
-              <Button
-                icon={listening ? Square : Mic}
-                variant="secondary"
+                <span className="capture-hero-top">
+                  <span className="capture-hero-icon">
+                    <Camera size={22} strokeWidth={2.2} />
+                  </span>
+                  <span className="eyebrow">Fastest</span>
+                </span>
+                <span className="capture-hero-text">
+                  <strong>Take a photo</strong>
+                  <small>Point at your plate. We’ll estimate each item.</small>
+                </span>
+              </button>
+            )}
+            <div className="capture-tiles">
+              <button
+                type="button"
+                className="capture-tile"
+                disabled={capturing}
+                onClick={() =>
+                  value.photoName ? camera.current?.click() : gallery.current?.click()
+                }
+              >
+                <span className="capture-tile-icon">
+                  {value.photoName ? (
+                    <Camera size={19} strokeWidth={2.2} />
+                  ) : (
+                    <Images size={19} strokeWidth={2.2} />
+                  )}
+                </span>
+                <span>
+                  <strong>{value.photoName ? 'Retake' : 'Library'}</strong>
+                  <small>{value.photoName ? 'Use the camera' : 'Choose a photo'}</small>
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`capture-tile ${listening ? 'active' : ''}`}
                 disabled={!!busy}
+                aria-pressed={listening}
                 onClick={listening ? () => recognizer.current?.stop() : speak}
               >
-                {listening ? 'Stop listening' : 'Speak'}
-              </Button>
+                <span className="capture-tile-icon">
+                  {listening ? (
+                    <Square size={19} strokeWidth={2.2} />
+                  ) : (
+                    <Mic size={19} strokeWidth={2.2} />
+                  )}
+                </span>
+                <span>
+                  <strong>{listening ? 'Listening…' : 'Speak'}</strong>
+                  <small>{listening ? 'Tap to stop' : 'Describe it aloud'}</small>
+                </span>
+              </button>
             </div>
             {listening && (
-              <Banner>
-                Listening… Your browser’s speech service turns your description
-                into an editable transcript.
+              <Banner tone="lime">
+                Describe your meal, with amounts if you know them. Your
+                browser’s speech service turns it into text.
               </Banner>
-            )}
-            {value.photoName && (
-              <div className="photo-card">
-                {preview ? (
-                  <img src={preview} alt="Selected meal" />
-                ) : (
-                  <p>{value.photoName}</p>
-                )}
-                <Button
-                  variant="secondary"
-                  disabled={!!busy}
-                  onClick={() => {
-                    void draftFile(fileKey, null);
-                    setFile(undefined);
-                    change((old) => ({
-                      ...old,
-                      photoName: undefined,
-                      fileId: undefined,
-                      source: 'text',
-                      operationId: operationId(),
-                    }));
-                  }}
-                >
-                  Remove photo
-                </Button>
-              </div>
             )}
             <TextArea
               label={
                 value.source === 'voice'
-                  ? 'Your transcript — edit if needed'
-                  : 'Or describe your meal'
+                  ? 'Your words — edit if needed'
+                  : value.photoName
+                    ? 'Add detail (optional)'
+                    : 'Or type it'
               }
-              placeholder="Two eggs on toast, with a little butter…"
+              placeholder="Two eggs on toast with a little butter…"
               value={value.text}
               maxLength={3000}
               disabled={!!busy}
@@ -502,19 +554,57 @@ function MealEditor({ existing }: { existing?: Doc<'meals'> | null }) {
                 setError('');
               }}
             />
-            <p className="caption">
-              <Utensils size={18} />
-              One review. Nothing saved until you say so.
-            </p>
-            {busy && (
-              <Banner>
-                {busy} You can close this dialog; your input is kept.
+            {busy ? (
+              <Banner tone="lime">
+                {`${busy} You can close this sheet; your input is kept.`}
               </Banner>
+            ) : (
+              <p className="note-row">
+                <ShieldCheck size={16} strokeWidth={2.2} />
+                <span>One quick review. Nothing is saved until you confirm.</span>
+              </p>
             )}
           </>
         )}
       </div>
     </Sheet>
+  );
+}
+export function MealTotal({ meal }: { meal: MealInput }) {
+  const total = totals(meal.items);
+  return (
+    <section
+      className="meal-total"
+      aria-label={`Meal total ${Math.round(total.calories)} kilocalories, ${Math.round(total.protein)} grams protein, ${Math.round(total.carbs)} grams carbs, ${Math.round(total.fat)} grams fat`}
+    >
+      <div>
+        <span className="meal-total-label">Meal total · estimate</span>
+        <p className="meal-total-kcal">
+          <strong className="metric">{Math.round(total.calories).toLocaleString()}</strong>
+          <span>kcal</span>
+        </p>
+      </div>
+      <div className="meal-total-macros">
+        {(
+          [
+            ['Protein', total.protein, 'protein'],
+            ['Carbs', total.carbs, 'carbs'],
+            ['Fat', total.fat, 'fat'],
+          ] as const
+        ).map(([label, v, col]) => (
+          <div key={label}>
+            <span>
+              <i style={{ background: `var(--${col})` }} />
+              {label}
+            </span>
+            <strong className="metric-sm">
+              {Math.round(v)}
+              <small> g</small>
+            </strong>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 function MealReview({
@@ -524,168 +614,193 @@ function MealReview({
   meal: MealInput;
   onChange(meal: MealInput): void;
 }) {
-  const total = totals(meal.items);
+  const [expanded, setExpanded] = useState(-1);
+  const [editDate, setEditDate] = useState(false);
   function item(index: number, patch: Partial<MealItem>) {
     onChange({
       ...meal,
       items: meal.items.map((v, i) => (i === index ? { ...v, ...patch } : v)),
     });
   }
+  const validDay = /^\d{4}-\d{2}-\d{2}$/.test(meal.day);
   return (
     <div className="stack">
       <Field
         label="Meal name"
+        placeholder="e.g. Paneer wrap and salad"
         value={meal.title}
         maxLength={100}
         onChange={(e) => onChange({ ...meal, title: e.target.value })}
       />
-      <div className="two-columns">
-        <Field
-          label="Date"
-          type="date"
-          value={meal.day}
-          onChange={(e) => onChange({ ...meal, day: e.target.value })}
-        />
-        <Field
-          label="Time"
-          type="time"
-          value={meal.time}
-          onChange={(e) => onChange({ ...meal, time: e.target.value })}
-        />
+      <button
+        type="button"
+        className="date-pill"
+        aria-expanded={editDate}
+        onClick={() => setEditDate(!editDate)}
+      >
+        <CalendarClock size={16} strokeWidth={2.2} />
+        <span>
+          {validDay ? formatDay(meal.day, 'short') : meal.day} · {meal.time}
+        </span>
+        {editDate ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      </button>
+      {editDate && (
+        <div className="two-columns">
+          <Field
+            label="Date"
+            type="date"
+            value={meal.day}
+            onChange={(e) => onChange({ ...meal, day: e.target.value })}
+          />
+          <Field
+            label="Time"
+            type="time"
+            value={meal.time}
+            onChange={(e) => onChange({ ...meal, time: e.target.value })}
+          />
+        </div>
+      )}
+      <MealTotal meal={meal} />
+      <div className="list-heading">
+        <h2>Items</h2>
+        <span>Tap an item to edit</span>
       </div>
-      <p className="small muted">
-        Check the food and portions. Expand an item to edit its nutrition
-        estimate.
-      </p>
-      {meal.items.map((food, i) => (
-        <div className="food-card" key={i}>
-          <details open={!food.name || undefined}>
-            <summary>
+      {meal.items.map((food, i) => {
+        const open = expanded === i || !food.name;
+        return (
+          <div className="item-card" key={i}>
+            <button
+              type="button"
+              className="item-head"
+              aria-expanded={open}
+              onClick={() => setExpanded(expanded === i ? -1 : i)}
+            >
               <span>
                 <strong>{food.name || `Add food ${i + 1}`}</strong>
-                <small>
-                  {food.quantity} × {food.portion}
-                </small>
+                <small>{food.portion}</small>
               </span>
-              <strong>
-                {Math.round(food.calories * food.quantity)} <small>kcal</small>
-              </strong>
-            </summary>
-            <div className="stack food-details">
-              <Field
-                label={`Food ${i + 1}`}
-                value={food.name}
-                maxLength={100}
-                onChange={(e) => item(i, { name: e.target.value })}
-              />
-              <div className="two-columns">
-                <Field
-                  label="One portion"
-                  value={food.portion}
-                  onChange={(e) => item(i, { portion: e.target.value })}
-                />
-                <NumberField
-                  label="Quantity"
-                  value={food.quantity}
-                  onValue={(quantity) => item(i, { quantity: quantity ?? 0 })}
-                />
-              </div>
-              <p className="small muted">Nutrition per one portion</p>
-              <div className="nutrition-inputs">
-                {(['calories', 'protein', 'carbs', 'fat'] as const).map(
-                  (key) => (
-                    <NumberField
-                      key={key}
-                      label={
-                        key === 'calories'
-                          ? 'Energy (kcal)'
-                          : `${key[0].toUpperCase() + key.slice(1)} (g)`
-                      }
-                      value={food[key]}
-                      onValue={(n) => item(i, { [key]: n ?? 0 })}
-                    />
-                  ),
-                )}
-              </div>
-              {meal.items.length > 1 && (
-                <Button
-                  variant="danger"
-                  icon={Trash2}
+              <span className="item-kcal">
+                <strong>{Math.round(food.calories * food.quantity)}</strong>
+                <small>kcal</small>
+              </span>
+            </button>
+            <div className="item-foot">
+              <span className="item-macros">
+                P {Math.round(food.protein * food.quantity)}g · C{' '}
+                {Math.round(food.carbs * food.quantity)}g · F{' '}
+                {Math.round(food.fat * food.quantity)}g
+              </span>
+              <span className="stepper">
+                <IconButton
+                  icon={Minus}
+                  size={34}
+                  label={`Less ${food.name || 'food'}`}
                   onClick={() =>
-                    onChange({
-                      ...meal,
-                      items: meal.items.filter((_, n) => n !== i),
+                    item(i, {
+                      quantity: Math.max(
+                        0.25,
+                        Math.round((food.quantity - 0.25) * 100) / 100,
+                      ),
                     })
                   }
-                >
-                  Remove item
-                </Button>
-              )}
+                />
+                <strong aria-label={`Quantity ${food.quantity}`}>×{food.quantity}</strong>
+                <IconButton
+                  icon={Plus}
+                  size={34}
+                  tone="ink"
+                  label={`More ${food.name || 'food'}`}
+                  onClick={() =>
+                    item(i, {
+                      quantity: Math.min(
+                        100,
+                        Math.round((food.quantity + 0.25) * 100) / 100,
+                      ),
+                    })
+                  }
+                />
+              </span>
             </div>
-          </details>
-          <div className="quantity-row">
-            <span>Adjust quantity</span>
-            <div className="row">
-              <button
-                className="icon-button"
-                aria-label={`Less ${food.name || 'food'}`}
-                onClick={() =>
-                  item(i, {
-                    quantity: Math.max(
-                      0.25,
-                      Math.round((food.quantity - 0.25) * 100) / 100,
+            {open && (
+              <div className="item-details stack">
+                <Field
+                  label="Food"
+                  placeholder="What is it?"
+                  value={food.name}
+                  maxLength={100}
+                  onChange={(e) => item(i, { name: e.target.value })}
+                />
+                <div className="two-columns wide-first">
+                  <Field
+                    label="One portion"
+                    value={food.portion}
+                    onChange={(e) => item(i, { portion: e.target.value })}
+                  />
+                  <NumberField
+                    label="Quantity"
+                    value={food.quantity}
+                    onValue={(quantity) => item(i, { quantity: quantity ?? 0 })}
+                  />
+                </div>
+                <p className="caption">Nutrition for one portion</p>
+                <div className="two-columns">
+                  {(['calories', 'protein', 'carbs', 'fat'] as const).map(
+                    (key) => (
+                      <NumberField
+                        key={key}
+                        label={
+                          key === 'calories'
+                            ? 'Energy (kcal)'
+                            : `${key[0].toUpperCase() + key.slice(1)} (g)`
+                        }
+                        value={food[key]}
+                        onValue={(n) => item(i, { [key]: n ?? 0 })}
+                      />
                     ),
-                  })
-                }
-              >
-                <Minus size={18} />
-              </button>
-              <strong>{food.quantity}</strong>
-              <button
-                className="icon-button"
-                aria-label={`More ${food.name || 'food'}`}
-                onClick={() =>
-                  item(i, {
-                    quantity: Math.min(
-                      100,
-                      Math.round((food.quantity + 0.25) * 100) / 100,
-                    ),
-                  })
-                }
-              >
-                <Plus size={18} />
-              </button>
-            </div>
+                  )}
+                </div>
+                {meal.items.length > 1 && (
+                  <Button
+                    variant="danger"
+                    size="medium"
+                    icon={Trash2}
+                    onClick={() =>
+                      onChange({
+                        ...meal,
+                        items: meal.items.filter((_, n) => n !== i),
+                      })
+                    }
+                  >
+                    Remove item
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
       <Button
         icon={Plus}
-        variant="secondary"
+        variant="outline"
+        size="medium"
         disabled={meal.items.length >= 30}
-        onClick={() =>
-          onChange({ ...meal, items: [...meal.items, blankItem()] })
-        }
+        onClick={() => {
+          onChange({ ...meal, items: [...meal.items, blankItem()] });
+          setExpanded(meal.items.length);
+        }}
       >
-        Add food
+        Add an item
       </Button>
-      <div className="review-total">
-        <strong>Meal estimate</strong>
-        <strong>{Math.round(total.calories)} kcal</strong>
-        <span>
-          {Math.round(total.protein)} g protein · {Math.round(total.carbs)} g
-          carbs · {Math.round(total.fat)} g fat
-        </span>
-      </div>
       <TextArea
-        label="Notes & uncertain estimates"
+        label="Notes & assumptions"
+        placeholder="Anything worth remembering about this meal"
         value={meal.note}
         maxLength={600}
         onChange={(e) => onChange({ ...meal, note: e.target.value })}
       />
-      <p className="small muted">
-        Portions and nutrition are estimates, including hidden oils and
-        ingredients. Saving confirms your review, not measurement accuracy.
+      <p className="caption">
+        Values are estimates, including ones you correct. Saving confirms this
+        entry; it doesn’t verify nutrition accuracy.
       </p>
     </div>
   );

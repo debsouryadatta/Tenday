@@ -7,6 +7,7 @@ import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
 import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
+import '@fontsource/inter/800.css';
 import { CONVEX_URL } from './constants';
 import { AppState } from './lib/app-state';
 import { Banner, Brand, Loading } from './components/ui';
@@ -53,10 +54,12 @@ createRoot(document.getElementById('root')!).render(
         </ConvexAuthProvider>
       ) : (
         <div className="session-screen">
-          <Brand />
-          <h1>Open Tenday securely.</h1>
-          <Banner>
-            Use HTTPS or localhost before entering personal information.
+          <Brand link={false} />
+          <span className="eyebrow">Secure connection needed</span>
+          <h1>Open Tenday securely</h1>
+          <Banner tone="warning">
+            This address isn’t using a secure connection. Use HTTPS or
+            localhost before entering personal information.
           </Banner>
         </div>
       )}

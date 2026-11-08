@@ -1,27 +1,42 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from 'convex/react';
-import { ArrowRight, CircleCheck, ScanLine, Sprout } from 'lucide-react';
+import {
+  ArrowRight,
+  Beef,
+  CalendarCheck,
+  Flame,
+  Minus,
+  Plus,
+  ShieldCheck,
+} from 'lucide-react';
 import { goalSchema, type Goal } from '@tenday/domain';
 import { api } from '../lib/backend';
 import { useApp, errorMessage } from '../lib/app-state';
 import { useDraft } from '../lib/storage';
 import {
   Banner,
-  Brand,
+  BrandTile,
   Button,
+  Choice,
+  IconButton,
   Loading,
-  NumberField,
   Sheet,
   TextArea,
 } from '../components/ui';
+const UNIT = {
+  consistency: 'meals a day',
+  protein: 'g protein a day',
+  awareness: 'kcal a day',
+} as const;
+const STEP = { consistency: 1, protein: 5, awareness: 50 } as const;
 const options = [
   {
     kind: 'consistency' as const,
     title: 'Find my meal rhythm',
     subtitle: 'Build a gentle, consistent logging habit.',
     target: 3,
-    icon: CircleCheck,
+    icon: CalendarCheck,
     rationale:
       'A simple record helps you notice your meal rhythm. Missing a day is okay.',
   },
@@ -30,7 +45,7 @@ const options = [
     title: 'Understand my eating',
     subtitle: 'Notice your energy intake without judgment.',
     target: 2000,
-    icon: ScanLine,
+    icon: Flame,
     rationale:
       'Track against a target you choose. It is a reference for awareness, not a recommended calorie allowance.',
   },
@@ -39,7 +54,7 @@ const options = [
     title: 'Keep protein in view',
     subtitle: 'See how your meals add up through the day.',
     target: 80,
-    icon: Sprout,
+    icon: Beef,
     rationale:
       'Use your own protein target to understand your meals. Tenday does not calculate medical nutrition needs.',
   },
@@ -90,23 +105,37 @@ export function GoalPage({ editing = false }: { editing?: boolean }) {
       setBusy(false);
     }
   }
-  const title =
-    step === 0
-      ? 'Small steps. A little more you.'
-      : editing
-        ? 'Your goal & preferences'
-        : 'Make this your own';
+  const step0 = step === 0;
+  const max =
+    goal.kind === 'consistency' ? 10 : goal.kind === 'protein' ? 300 : 10000;
+  const bump = (dir: 1 | -1) =>
+    draft.change({
+      ...goal,
+      target: Math.min(
+        max,
+        Math.max(1, Math.round((goal.target || 0) + dir * STEP[goal.kind])),
+      ),
+    });
+  const title = step0
+    ? 'What would feel helpful?'
+    : editing
+      ? 'Goal & preferences'
+      : 'Make it yours';
+  const subtitle = step0
+    ? 'Pick one focus. Tenday shapes your Today screen and guidance around it.'
+    : 'Just enough context to make Tenday useful. Change it anytime.';
+  const eyebrow = editing ? 'Your goal' : `Step ${step + 1} of 2`;
   const footer = (
     <>
       <Button
-        icon={ArrowRight}
+        trailingIcon={ArrowRight}
         busy={busy}
-        onClick={step === 0 ? () => setStep(1) : submit}
+        onClick={step0 ? () => setStep(1) : submit}
       >
-        {step === 0 ? 'Continue' : editing ? 'Save changes' : 'Start my day'}
+        {step0 ? 'Continue' : editing ? 'Save changes' : 'Start my day'}
       </Button>
       {step === 1 && !editing && (
-        <Button variant="secondary" onClick={() => setStep(0)}>
+        <Button variant="ghost" size="medium" onClick={() => setStep(0)}>
           Back
         </Button>
       )}
@@ -114,14 +143,15 @@ export function GoalPage({ editing = false }: { editing?: boolean }) {
   );
   const content = (
     <div className="stack">
-      {(step === 0 || editing) && (
-        <div className="choices">
+      {(step0 || editing) && (
+        <div className="choices" role="radiogroup" aria-label="Goal">
           {options.map((o) => (
-            <button
+            <Choice
               key={o.kind}
-              className={`choice ${goal.kind === o.kind ? 'selected' : ''}`}
-              role="radio"
-              aria-checked={goal.kind === o.kind}
+              title={o.title}
+              subtitle={o.subtitle}
+              icon={o.icon}
+              selected={goal.kind === o.kind}
               onClick={() =>
                 draft.change({
                   ...goal,
@@ -130,57 +160,70 @@ export function GoalPage({ editing = false }: { editing?: boolean }) {
                   rationale: o.rationale,
                 })
               }
-            >
-              <o.icon size={24} />
-              <span>
-                <strong>{o.title}</strong>
-                <small>{o.subtitle}</small>
-              </span>
-              <span className="choice-dot" />
-            </button>
+            />
           ))}
         </div>
       )}
       {step === 1 && (
         <>
-          <NumberField
-            label={`Your daily reference (${goal.kind === 'consistency' ? 'meals to log' : goal.kind === 'protein' ? 'grams of protein' : 'kcal'})`}
-            value={goal.target}
-            min={1}
-            max={
-              goal.kind === 'consistency'
-                ? 10
-                : goal.kind === 'protein'
-                  ? 300
-                  : 10000
-            }
-            onValue={(target) => draft.change({ ...goal, target: target ?? 0 })}
-          />
-          <p className="muted small">
+          <div className="target-card">
+            <label htmlFor="goal-target">Your daily reference</label>
+            <div className="target-row">
+              <IconButton
+                icon={Minus}
+                label="Decrease target"
+                size={48}
+                tone="outline"
+                onClick={() => bump(-1)}
+              />
+              <input
+                id="goal-target"
+                inputMode="numeric"
+                aria-label={`Daily reference in ${UNIT[goal.kind]}`}
+                value={String(goal.target || '')}
+                maxLength={5}
+                onChange={(e) =>
+                  draft.change({
+                    ...goal,
+                    target: Number(e.target.value.replace(/[^0-9]/g, '')),
+                  })
+                }
+              />
+              <IconButton
+                icon={Plus}
+                label="Increase target"
+                size={48}
+                tone="ink"
+                onClick={() => bump(1)}
+              />
+            </div>
+            <span>{UNIT[goal.kind]}</span>
+          </div>
+          <p className="caption">
             {goal.kind === 'awareness'
-              ? '2,000 is an editable example, not a personal recommendation. Use a target you already know is appropriate for you.'
+              ? '2,000 is an editable example, not a personal recommendation. Use a target you already know suits you.'
               : 'A reference, not a rule. Choose what works for you.'}
           </p>
-          <Banner>{goal.rationale}</Banner>
+          <Banner tone="lime">{goal.rationale}</Banner>
           <TextArea
             label="Food preferences (optional)"
-            placeholder="For example, vegetarian; quick lunches"
+            placeholder="e.g. vegetarian, quick lunches"
             value={goal.preferences}
             maxLength={600}
             onChange={(e) =>
               draft.change({ ...goal, preferences: e.target.value })
             }
-            hint="Only what you confirm here is remembered. Clear this field anytime to forget it."
+            hint="Only what you confirm here is remembered. Clear it anytime to forget."
           />
-          <p className="muted small">
-            For adult, everyday wellbeing. Tenday tracks and explains; it does
-            not diagnose or prescribe. AI actions send the input you choose and
-            relevant confirmed context to OpenRouter and its selected provider.
-            Voice uses your browser’s speech service.
-          </p>
-          <p className="muted small">
-            Your account opens the same personal space on Android and web.
-            Shared demos remain separate from personal accounts.
+          <p className="note-row">
+            <ShieldCheck size={16} strokeWidth={2.2} />
+            <span>
+              For adult, everyday wellbeing. Tenday explains and tracks; it
+              doesn’t diagnose or prescribe. AI actions send the input you
+              choose and relevant confirmed context to OpenRouter and its
+              selected provider; no paid AI is used. Voice uses your browser’s
+              speech service. Personal accounts stay separate from shared demos.
+            </span>
           </p>
         </>
       )}
@@ -189,40 +232,30 @@ export function GoalPage({ editing = false }: { editing?: boolean }) {
   );
   if (editing)
     return (
-      <Sheet
-        title={title}
-        subtitle="Just enough context to make Tenday useful. You can change this anytime."
-        footer={footer}
-      >
+      <Sheet eyebrow={eyebrow} title={title} subtitle={subtitle} footer={footer}>
         {content}
       </Sheet>
     );
   return (
     <div className="onboarding">
-      <Brand />
-      <div className="onboarding-grid">
-        <section className="welcome">
-          <div className="eyebrow">A LITTLE CARE, EVERY DAY</div>
-          <h1>{title}</h1>
-          <p>
-            A calmer way to understand your meals and care for your everyday
-            health.
-          </p>
-          <img
-            src={`${import.meta.env.BASE_URL}carefold.png`}
-            alt="Carefold emblem"
-          />
-        </section>
-        <section className="onboarding-form">
-          <span className="step-label">{step + 1} / 2</span>
-          <h2>
-            {step === 0
-              ? 'What would feel helpful?'
-              : 'A useful starting point.'}
-          </h2>
-          {content}
-          <footer className="form-actions">{footer}</footer>
-        </section>
+      <div className="onboarding-card">
+        <div className="onboarding-top">
+          <BrandTile size={64} />
+          <div className="step-dots" aria-hidden>
+            {[0, 1].map((i) => (
+              <i key={i} className={i === step ? 'on' : ''} />
+            ))}
+          </div>
+        </div>
+        <header className="page-title">
+          <div>
+            <span className="eyebrow">{eyebrow}</span>
+            <h1>{title}</h1>
+            <p>{subtitle}</p>
+          </div>
+        </header>
+        {content}
+        <footer className="onboarding-footer">{footer}</footer>
       </div>
     </div>
   );

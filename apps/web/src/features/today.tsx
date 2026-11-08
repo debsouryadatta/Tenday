@@ -1,58 +1,67 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAction, usePaginatedQuery, useQuery } from 'convex/react';
 import {
-  ArrowUpRight,
-  Plus,
+  ArrowLeft,
+  Beef,
+  Camera,
+  Flame,
   Utensils,
-  History as HistoryIcon,
-  ChevronRight,
-  CircleCheck,
+  type LucideIcon,
 } from 'lucide-react';
-import { totals } from '@tenday/domain';
-import { api, type Doc } from '../lib/backend';
+import { AssistantMark } from '../components/assistant-mark';
+import { localDay, totals } from '@tenday/domain';
+import { api } from '../lib/backend';
 import { useApp } from '../lib/app-state';
 import { useDay } from '../lib/day';
-import { Banner, Button, Empty, Loading, PageTitle } from '../components/ui';
-export function MealRow({
-  entry,
-  showDay = false,
-}: {
-  entry: Doc<'meals'>;
-  showDay?: boolean;
-}) {
-  const navigate = useNavigate();
-  return (
-    <button
-      className="list-row"
-      onClick={() =>
-        navigate(`/meal/${entry._id}`, {
-          state: { returnTo: showDay ? '/history' : '/' },
-        })
-      }
-    >
-      <span className="row-icon">
-        <Utensils size={20} />
-      </span>
-      <span className="row-text">
-        <strong>{entry.meal.title}</strong>
-        <small>
-          {showDay && `${entry.day} · `}
-          {entry.meal.time} · {entry.meal.items.length}{' '}
-          {entry.meal.items.length === 1 ? 'item' : 'items'}
-        </small>
-      </span>
-      <span className="row-value">
-        {Math.round(totals(entry.meal.items).calories)} <small>kcal</small>
-      </span>
-      <ChevronRight size={18} />
-    </button>
+import { useIdentity } from '../../../mobile/src/lib/auth-session';
+import {
+  Banner,
+  Button,
+  Empty,
+  IconButton,
+  LinkButton,
+  Loading,
+  MacroTile,
+  PageTitle,
+  ProgressRing,
+  Section,
+} from '../components/ui';
+import { AccountBar } from '../components/shell';
+import { MealRow } from './meal-row';
+import { formatDay, greeting, groupByDay, weekEnding } from '../lib/format';
+
+export { MealRow } from './meal-row';
+
+const GOAL_META: Record<
+  'consistency' | 'protein' | 'awareness',
+  { label: string; icon: LucideIcon; unit: string }
+> = {
+  consistency: { label: 'Meals logged', icon: Utensils, unit: 'meals' },
+  protein: { label: 'Protein today', icon: Beef, unit: 'g' },
+  awareness: { label: 'Energy today', icon: Flame, unit: 'kcal' },
+};
+
+export function ConnectionBanner() {
+  const { connected } = useApp();
+  return connected ? null : (
+    <Banner tone="warning" title="You’re offline">
+      Saved records may be cached. New entries stay on this device until you
+      reconnect.
+    </Banner>
   );
 }
+
 export function Today() {
   const day = useDay(),
-    { profile, connected } = useApp();
+    { profile, connected } = useApp(),
+    { account } = useIdentity();
   const data = useQuery(api.records.today, { day });
+  const recent = usePaginatedQuery(
+    api.records.mealHistory,
+    {},
+    { initialNumItems: 60 },
+  );
   const guidance = useAction(api.assistant.guidance),
     requested = useRef('');
   useEffect(() => {
@@ -62,184 +71,227 @@ export function Today() {
     requested.current = key;
     void guidance({ day }).catch(() => {});
   }, [profile, data, connected, day, guidance]);
-  if (!data || !profile || !data.progress)
-    return <Loading>Opening your day…</Loading>;
-  const p = data.progress;
+  const week = useMemo(() => {
+    const logged = new Set(recent.results.map((m) => m.day));
+    return weekEnding(day).map((d) => ({ ...d, logged: logged.has(d.key) }));
+  }, [recent.results, day]);
+  if (!data || !profile || !data.progress) return <Loading />;
+  const progress = data.progress;
+  const kind = profile.goal.kind;
+  const meta = GOAL_META[kind];
+  const daily = progress.daily;
+  const macroKcal = daily.protein * 4 + daily.carbs * 4 + daily.fat * 9 || 1;
+  const firstName = account?.name?.split(' ')[0];
+  const reached = progress.fraction >= 1;
+  const remaining = Math.max(progress.target - progress.value, 0);
+  const next =
+    data.meals.length === 0
+      ? 'Start with the meal you’re having.'
+      : reached
+        ? 'Take a moment to notice what worked.'
+        : 'Keep the next meal simple.';
+  const basis =
+    data.meals.length === 0
+      ? 'A photo, a few words or your voice is enough. You’ll review it before anything is saved.'
+      : `${data.meals.length} ${data.meals.length === 1 ? 'meal is' : 'meals are'} saved today. Your goal is a reference to help you notice patterns, not a reason to judge your day.`;
+  let streak = 0;
+  for (let i = week.length - 1; i >= 0; i--) {
+    if (week[i].logged) streak++;
+    else if (i === week.length - 1) continue;
+    else break;
+  }
+  const loggedDays = week.filter((d) => d.logged).length;
   return (
-    <>
+    <div className="page today">
+      <AccountBar />
       <PageTitle
-        title="Your day, a little clearer."
-        subtitle={new Date(`${day}T12:00:00`).toLocaleDateString(undefined, {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-        })}
-        action={
-          <Link className="button primary" to="/meal">
-            <Plus size={19} />
-            Log a meal
-          </Link>
-        }
+        eyebrow={formatDay(day, 'weekday')}
+        title={`${greeting()}${firstName ? `, ${firstName}` : ''}`}
       />
-      {!connected && (
-        <Banner>
-          You’re offline. New confirmed entries stay on this device until you
-          reconnect.
-        </Banner>
-      )}
-      <div className="dashboard-grid">
-        <div className="stack">
-          <section className="insight">
-            <div className="eyebrow">
-              <CircleCheck size={19} />A LITTLE HELP FOR TODAY
-              <Link to="/assistant" aria-label="Talk through today’s guidance">
-                <ArrowUpRight size={23} />
-              </Link>
-            </div>
-            <h2>
-              {data.insight?.text ??
-                (data.meals.length
-                  ? 'Keep the next meal simple.'
-                  : 'Start with one meal.')}
-            </h2>
-            <p>
-              {data.insight?.basis ??
-                (data.meals.length
-                  ? `${data.meals.length} ${data.meals.length === 1 ? 'meal is' : 'meals are'} saved today. Your goal is a reference to help you notice patterns, not a reason to judge your day.`
-                  : 'Log what you actually ate, with a photo or a few words. One record is a useful beginning.')}
-            </p>
-            <Link className="button secondary" to="/assistant">
-              Talk it through
-              <ArrowUpRight size={18} />
-            </Link>
-          </section>
-          <section className="journal">
-            <div className="section-heading">
-              <h2>On your plate</h2>
-              <Link className="text-link" to="/history">
-                <HistoryIcon size={17} />
-                History
-              </Link>
-            </div>
-            {data.meals.length ? (
-              <div className="list">
-                {data.meals.map((entry) => (
-                  <MealRow key={entry._id} entry={entry} />
-                ))}
+      <div className="today-grid">
+        <div className="today-main stack">
+          <Link
+            to="/history"
+            className="week-strip"
+            aria-label={`This week: meals logged on ${loggedDays} of 7 days. Open history`}
+          >
+            {week.map((d) => (
+              <span
+                key={d.key}
+                className={`week-day ${d.key === day ? 'today' : ''} ${d.logged ? 'logged' : ''}`}
+              >
+                <small>{d.letter}</small>
+                <strong>{d.date}</strong>
+                <i />
+              </span>
+            ))}
+          </Link>
+          <ConnectionBanner />
+          <section className="goal-hero" aria-label="Today’s goal">
+            <div className="goal-hero-top">
+              <div className="goal-hero-text">
+                <span className="goal-label">{meta.label}</span>
+                <strong className="metric">
+                  {Math.round(progress.value).toLocaleString()}
+                </strong>
+                <span className="goal-sub">
+                  of {progress.target.toLocaleString()} {meta.unit}
+                  {!reached && remaining > 0
+                    ? ` · ${Math.round(remaining).toLocaleString()} to go`
+                    : ''}
+                </span>
               </div>
-            ) : (
-              <Empty icon={Utensils} title="One meal is a good beginning.">
-                Your confirmed meals will appear here. Estimates stay editable
-                until you save.
-              </Empty>
-            )}
-            <p className="small muted">
-              Saved by you. Nutrition values are estimates.
-            </p>
+              <ProgressRing
+                fraction={progress.fraction}
+                size={108}
+                stroke={11}
+                color={reached ? 'var(--lime)' : 'var(--ink)'}
+                label={`${Math.round(progress.fraction * 100)}% of today’s reference`}
+              >
+                <span className={`ring-icon ${reached ? 'reached' : ''}`}>
+                  <meta.icon size={22} strokeWidth={2.2} />
+                </span>
+              </ProgressRing>
+            </div>
+            <div className="goal-hero-foot">
+              <span>
+                {reached
+                  ? 'Reference reached. Every day can look different.'
+                  : kind === 'awareness'
+                    ? `${data.meals.length} ${data.meals.length === 1 ? 'meal' : 'meals'} today`
+                    : `${Math.round(daily.calories).toLocaleString()} kcal today`}
+                {streak > 1 ? ` · ${streak}-day rhythm` : ''}
+              </span>
+              <LinkButton to="/goal">Adjust goal</LinkButton>
+            </div>
           </section>
+          <div className="macro-row">
+            <MacroTile
+              label="Protein"
+              value={daily.protein}
+              color="var(--protein)"
+              fraction={(daily.protein * 4) / macroKcal}
+            />
+            <MacroTile
+              label="Carbs"
+              value={daily.carbs}
+              color="var(--carbs)"
+              fraction={(daily.carbs * 4) / macroKcal}
+            />
+            <MacroTile
+              label="Fat"
+              value={daily.fat}
+              color="var(--fat)"
+              fraction={(daily.fat * 9) / macroKcal}
+            />
+          </div>
+          <Link
+            to="/assistant"
+            className="guidance-card"
+            aria-label="Talk today’s guidance through with the assistant"
+          >
+            <span className="eyebrow lime-ink">
+              <AssistantMark size={22} halo="var(--limeSoft)" />
+              For today
+            </span>
+            <h2>{data.insight?.text ?? next}</h2>
+            <p>{data.insight?.basis ?? basis}</p>
+            <span className="pill-ink">Talk it through</span>
+          </Link>
         </div>
-        <aside className="stack">
-          <section className="progress-card">
-            <div className="eyebrow">YOUR DAILY REFERENCE</div>
-            <div
-              className="progress-ring"
-              role="img"
-              aria-label={`${Math.round(p.value)} of ${p.target} ${p.unit}`}
-              style={{
-                background: `conic-gradient(var(--forest) ${p.fraction * 360}deg, var(--line) 0)`,
-              }}
-            >
-              <div>
-                <strong>{Math.round(p.value)}</strong>
-                <small>
-                  of {p.target} {p.unit}
-                </small>
-              </div>
+        <div className="today-side">
+          <Section
+            title="Today’s meals"
+            action={<LinkButton to="/history">History</LinkButton>}
+          />
+          {data.meals.length ? (
+            <div className="meal-list">
+              {data.meals.map((entry) => (
+                <MealRow key={entry._id} entry={entry} />
+              ))}
             </div>
-            <h2>
-              {profile.goal.kind === 'consistency'
-                ? 'Your meal rhythm'
-                : profile.goal.kind === 'protein'
-                  ? 'Protein in view'
-                  : 'Energy awareness'}
-            </h2>
-            <p>
-              A reference, not a rule.
-              <br />
-              One meal at a time.
-            </p>
-            <Link className="button quiet" to="/goal">
-              Adjust goal
+          ) : (
+            <Link className="first-meal" to="/meal" aria-label="Log your first meal">
+              <span className="first-meal-icon">
+                <Camera size={22} strokeWidth={2.2} />
+              </span>
+              <strong>Log your first meal</strong>
+              <span>No perfect tracking needed. Snap it, say it or type it.</span>
             </Link>
-          </section>
-          <section className="nutrition-card">
-            <h2>A little balance</h2>
-            <div className="metric-row">
-              <span>Energy</span>
-              <strong>
-                {Math.round(p.daily.calories)} <small>kcal</small>
-              </strong>
-            </div>
-            <div className="metric-row">
-              <span>Protein</span>
-              <strong>
-                {Math.round(p.daily.protein)} <small>g</small>
-              </strong>
-            </div>
-            <div className="metric-row">
-              <span>Carbs</span>
-              <strong>
-                {Math.round(p.daily.carbs)} <small>g</small>
-              </strong>
-            </div>
-            <div className="metric-row">
-              <span>Fat</span>
-              <strong>
-                {Math.round(p.daily.fat)} <small>g</small>
-              </strong>
-            </div>
-          </section>
-        </aside>
+          )}
+          {data.meals.length > 0 && (
+            <p className="footnote">Saved by you · Nutrition values are estimates</p>
+          )}
+        </div>
       </div>
-    </>
+    </div>
   );
 }
+
 export function History() {
   const { results, status, loadMore } = usePaginatedQuery(
     api.records.mealHistory,
     {},
     { initialNumItems: 20 },
   );
+  const today = localDay();
   return (
-    <>
+    <div className="page narrow">
+      <div className="page-top">
+        <LinkButtonBack />
+      </div>
       <PageTitle
-        title="Meals you’ve kept."
-        subtitle="A useful record, with room to change your mind."
-        action={
-          <Link to="/meal" className="button primary">
-            <Plus size={19} />
-            Log a meal
-          </Link>
-        }
+        eyebrow="Meal history"
+        title="Your rhythm"
+        subtitle="Every confirmed meal, one day at a time."
       />
       {status === 'LoadingFirstPage' ? (
-        <Loading />
+        <Loading>Opening history…</Loading>
       ) : results.length ? (
-        <div className="list">
-          {results.map((entry) => (
-            <MealRow key={entry._id} entry={entry} showDay />
-          ))}
+        <div className="history">
+          {groupByDay(results).map((group) => {
+            const kcal = group.items.reduce(
+              (sum, m) => sum + totals(m.meal.items).calories,
+              0,
+            );
+            return (
+              <section key={group.day} className="history-day">
+                <header>
+                  <h2>{group.day === today ? 'Today' : formatDay(group.day, 'weekday')}</h2>
+                  <span>
+                    {group.items.length} {group.items.length === 1 ? 'meal' : 'meals'} ·{' '}
+                    {Math.round(kcal).toLocaleString()} kcal
+                  </span>
+                </header>
+                <div className="meal-list">
+                  {group.items.map((entry) => (
+                    <MealRow key={entry._id} entry={entry} showDay={false} returnTo="/history" />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       ) : (
-        <Empty icon={Utensils} title="Your first meal starts the story.">
-          Save a meal from Today to begin your history.
+        <Empty icon={Utensils} title="A fresh page">
+          Your confirmed meals will appear here, grouped by day.
         </Empty>
       )}
       {status === 'CanLoadMore' && (
-        <Button variant="secondary" onClick={() => loadMore(20)}>
-          Earlier meals
+        <Button variant="secondary" size="medium" onClick={() => loadMore(20)}>
+          Show earlier meals
         </Button>
       )}
-    </>
+    </div>
+  );
+}
+function LinkButtonBack() {
+  const navigate = useNavigate();
+  return (
+    <IconButton
+      icon={ArrowLeft}
+      label="Go back"
+      onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+    />
   );
 }

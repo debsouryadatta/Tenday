@@ -1,66 +1,36 @@
 import { Redirect, Tabs } from 'expo-router';
-import { Home, MessageCircle, Files } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { WifiOff } from 'lucide-react-native';
 import { useApp } from '../../lib/app-state';
-import { Banner, Loading, Screen } from '../../components/ui';
-import { c, type } from '../../theme/tokens';
+import { Empty, Loading, Screen } from '../../components/ui';
+import { TabBar } from '../../components/tab-bar';
+import { NAV_MODE } from '../../constants';
+import { c } from '../../theme/tokens';
 export default function TabLayout() {
-  const insets = useSafeAreaInsets();
   const { profile, connected } = useApp();
   if (profile === undefined && !connected)
     return (
-      <Screen
-        title="Your day is kept."
-        subtitle="Reconnect to open your private records."
-      >
-        <Banner>
-          We’ll reconnect automatically. Your drafts and pending entries stay on
-          this device.
-        </Banner>
+      <Screen>
+        <Empty
+          icon={WifiOff}
+          title="Your day is kept"
+          body="Reconnect to open your private records. Drafts and pending entries stay on this device."
+        />
       </Screen>
     );
   if (profile === undefined) return <Loading />;
   if (profile === null) return <Redirect href="/onboarding" />;
   return (
     <Tabs
+      tabBar={NAV_MODE === 'tabs' ? (props) => <TabBar {...props} /> : () => null}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: c.forest,
-        tabBarInactiveTintColor: c.muted,
-        tabBarLabelStyle: { ...type.label },
-        tabBarStyle: {
-          backgroundColor: c.screen,
-          borderTopColor: c.line,
-          paddingTop: 8,
-          height: 64 + insets.bottom,
-          paddingBottom: insets.bottom + 4,
-        },
         sceneStyle: { backgroundColor: c.screen },
+        animation: 'fade',
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Today',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="assistant"
-        options={{
-          title: 'Assistant',
-          tabBarIcon: ({ color, size }) => (
-            <MessageCircle color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="reports"
-        options={{
-          title: 'Reports',
-          tabBarIcon: ({ color, size }) => <Files color={color} size={size} />,
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: 'Today' }} />
+      <Tabs.Screen name="assistant" options={{ title: 'Assistant' }} />
+      <Tabs.Screen name="reports" options={{ title: 'Reports' }} />
     </Tabs>
   );
 }

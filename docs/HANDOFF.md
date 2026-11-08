@@ -2,7 +2,13 @@
 
 The owner wants the complete app built autonomously with short, high-level updates. This file and linked documents preserve the working state across threads.
 
-## Current change: accounts and three shared demos
+## Current change: Night & Lime visual redesign — 9 November 2026
+
+The owner rejected the previous UI as generic and asked for a full visual redesign of both apps with no functional change, inspired by Cal AI and Apple News. They picked the **Night & Lime** palette from five options. The Carefold shape is unchanged; it's recoloured only (ink emblem on light surfaces, lime on the ink app icon/favicon). Every mobile screen and every web page was rebuilt on new shared primitives; see `docs/DESIGN_SYSTEM.md`. Web at phone widths mirrors mobile; at 1024px and up it's a sidebar dashboard. The assistant has an animated mark adapted from MemoHack. Bottom tabs were chosen over the full-screen variant after comparing both on the device. Android gesture and 3-button navigation were both checked. System back now pops in-app screens (`predictiveBackGestureEnabled: false`).
+
+Verified live on Android (debug + Metro) with the Maya demo: sign-in, Today, a real AI meal estimate → review → save → ring/toast update, a real assistant reply with the thinking mark, Reports, report detail, account sheet. Web was checked at 1280/390/320px. Lint, all typechecks, 40 tests and the web build pass.
+
+## Earlier change: accounts and three shared demos
 
 The owner's latest instruction supersedes anonymous-only entry: both apps now have custom email/password sign-up/sign-in, with Maya, Arjun and Leah demo cards directly underneath. Personal accounts use Convex Auth Password (Scrypt), remain isolated and work across Android/web. The `demo` credentials provider only issues one of three canonical server-selected demo identities; it never trusts a caller-supplied owner ID. Existing anonymous records remain separate and are not migrated into public demos.
 
