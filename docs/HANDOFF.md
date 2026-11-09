@@ -8,6 +8,10 @@ The owner rejected the previous UI as generic and asked for a full visual redesi
 
 Verified live on Android (debug + Metro) with the Maya demo: sign-in, Today, a real AI meal estimate → review → save → ring/toast update, a real assistant reply with the thinking mark, Reports, report detail, account sheet. Web was checked at 1280/390/320px. Lint, all typechecks, 40 tests and the web build pass.
 
+Physical-device delivery: at the owner's request, the redesigned signed APK was transferred through `ssh mac-pro` and installed successfully on their USB-connected Poco X3 Pro (Android 12, arm64). Tenday opened to its real sign-in/demo screen. Remote taps are blocked by the phone's `INJECT_EVENTS` security restriction, including the diagnostic retry; no post-login physical-device flow is claimed. The Mac T3 connector rejected the calling thread, so the owner-authorised SSH route used a separate named agent-device session. The Mac emulator was not targeted. See the physical-device entry in `docs/VERIFICATION.md`.
+
+Submission release (v1.0.0): splash screen and sheet nested-scroll patch, an arm64-only 20 MB APK, and the web app on Vercel at https://tenday-two.vercel.app. The owner sends the email themselves, adding their own Loom link; a draft is in `.local/submission-email.md`. Pending: the owner's manual check that sheets scroll to the top before dismissing. Details are in `docs/VERIFICATION.md`.
+
 ## Earlier change: accounts and three shared demos
 
 The owner's latest instruction supersedes anonymous-only entry: both apps now have custom email/password sign-up/sign-in, with Maya, Arjun and Leah demo cards directly underneath. Personal accounts use Convex Auth Password (Scrypt), remain isolated and work across Android/web. The `demo` credentials provider only issues one of three canonical server-selected demo identities; it never trusts a caller-supplied owner ID. Existing anonymous records remain separate and are not migrated into public demos.
@@ -64,7 +68,7 @@ If a new credential is needed, use the active secret-input mechanism. Existing a
 
 ## Scope and brand are settled
 
-Use Expo/React Native/TypeScript + Convex + OpenRouter. Convex is the owner's latest explicit choice, despite the original SQL suggestion. Tenday, Carefold, capital T, calm sage, Inter, white-first screens, flat cards, pill buttons and native sheets are approved. Reuse MemoHack's patterns, not its full architecture or study content.
+Use Expo/React Native/TypeScript + Convex + OpenRouter. Convex is the owner's latest explicit choice, despite the original SQL suggestion. Tenday, Carefold, capital T, Night & Lime (replaced calm sage on 9 November 2026), Inter, white-first screens, flat cards, pill buttons and native sheets are approved. Reuse MemoHack's patterns, not its full architecture or study content.
 
 The earlier visual exploration is context only. Normal app features now use real records/AI; never replace them with simulated responses.
 

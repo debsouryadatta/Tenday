@@ -21,7 +21,7 @@ The owner explicitly requests one short round of important questions in the new 
 
 - Name and wordmark: **Tenday**, capital T. Never revert to `tenday` in the displayed wordmark.
 - Selected emblem: **Carefold**, the rounded folded symbol in `assets/brand/approved-carefold-board.png`. It was numbered 03 in the exploration. The user's conflicting phrase “first logo” was resolved by the named Carefold selection and their subsequent approval. Do not substitute Tender T.
-- Calm sage palette; white-first UI; Inter; flat surfaces; pill CTAs; subtle motion.
+- Night & Lime palette (chosen 9 November 2026, replacing calm sage); white-first UI; Inter; flat surfaces; pill CTAs; subtle motion. See `docs/DESIGN_SYSTEM.md`.
 - Expo + React Native + TypeScript; Convex backend; OpenRouter for AI. The user's latest explicit Convex choice takes precedence over the original brief's Node + SQL suggestion. Firebase was suggested, but must serve a clear purpose rather than duplicate Convex.
 - Today is the landing screen; assistant is contextual and one tap away. No chat-only home.
 - Four core flows, fully functional: goal setup; meal logging; daily guidance/progress and conversation; report upload/review/understanding.

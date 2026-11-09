@@ -1,5 +1,22 @@
 # Tenday verification record
 
+## v1.0.0 submission release — 9 November 2026
+
+- **Startup white screen (owner report on Poco X3 Pro):** fixed with an ink `expo-splash-screen` showing the lime Carefold emblem (`apps/mobile/src/lib/boot.ts`). It's held until the first real screen commits. The owner confirmed the fix on their phone.
+- **Sheets closing on upward scroll (owner report):** react-native-screens 4.30.1 form sheets didn't tell Material `BottomSheetBehavior` which child scrolls, so an upward drag dismissed the sheet instead of scrolling. `patches/react-native-screens@4.30.1.patch` finds the visible nested-scrolling child on layout and re-binds it. `Screen` scroll views set `nestedScrollEnabled`. Built and installed on the Poco. The phone blocks remote taps (`INJECT_EVENTS`), so the scroll-then-dismiss behaviour still needs a manual check.
+- **APK size:** the release now ships `arm64-v8a` only, with compressed native libraries (`useLegacyPackaging`). It's 20,198,975 bytes, down from 61 MB with x86_64. SHA-256 `d5cb8c5016563e7f3fdecdc04450466a8ae13390fa7f6db28f714313da5a1599`. Gradle build: 6m 7s. For emulator testing, use a debug build or add `x86_64` back to `buildArchs`. Installing this exact APK on the Poco wasn't possible because the phone had been disconnected from the Mac.
+- **Web:** deployed as a static build to Vercel (free Hobby plan) at https://tenday-two.vercel.app, with an SPA rewrite. `/`, `/reports` and `/assistant` all returned HTTP 200 publicly.
+- **Checks:** 40 tests, lint, mobile/web typecheck and the Vite production build all pass. The tracked files and the web bundle contain no prohibited names and no keys.
+
+## Physical Poco X3 Pro installation — 9 November 2026
+
+- The owner requested installation on the actual USB phone connected to `mac-pro`, explicitly allowing SSH. USB discovery identified the physical Poco X3 Pro (model M2102J20SI, Android 12, arm64-v8a); no Mac emulator was targeted.
+- Installed the current Night & Lime APK from `output/android/Tenday.apk`: 61,008,456 bytes, SHA-256 `d2d5e2b99874360819970d9ebd9d6ac8b1cfc8b52d4ff085220e954ee941a958`. Its source map matches all 33 current mobile/domain source files represented in the bundle, with no differences, at source commit `69df7c0`. The independent Tenday signing certificate was verified. The transferred file's size and checksum matched before installation.
+- There was no previous Tenday package on the phone. Installation returned `Success`. A separate `tenday-poco-usb-20261109` agent-device session launched `app.tenday.companion`; its real sign-in/create-account and three demo choices were visible in the native snapshot and screenshot. No phone credentials were collected or personal records opened.
+- The Mac T3 device connector returned “This MCP client signed in from outside a thread.” Device work therefore used the owner's explicitly authorised SSH connection and the Mac's installed agent-device CLI.
+- Remote interaction failed with `java.lang.SecurityException: Injecting to another application requires INJECT_EVENTS permission`; the debug retry confirmed the same restriction. No security setting was changed. Post-login navigation, physical camera capture and microphone transcription remain unverified on this phone. The app is installed and was left open for the owner to explore manually.
+- This is a local physical-device installation. It does not update the older GitHub release assets or their delivery manifest.
+
 ## Workspace bootstrap on 8 November 2026
 
 | Check | Result |

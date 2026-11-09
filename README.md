@@ -2,7 +2,13 @@
 
 A calm personal health companion. Set a useful goal, log a meal with less effort, understand your day, and keep health reports with their original context.
 
-Tenday uses the approved **Carefold** emblem, Inter, forest green, sage and a white-first interface. Today is home; the assistant stays one tap away.
+Tenday uses the **Carefold** emblem and the **Night & Lime** design system: white-first screens, ink actions, a lime accent, Inter and an animated assistant mark. Today is home; the assistant stays one tap away.
+
+## Try it
+
+- **Web app:** https://tenday-two.vercel.app (phone width behaves like the mobile app; desktop opens a dashboard)
+- **Android APK:** [Tenday.apk](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0/Tenday.apk) from the [v1.0.0 release](https://github.com/debsouryadatta/Tenday/releases/tag/v1.0.0)
+- **Quick start:** tap the **Maya**, **Arjun** or **Leah** demo on the sign-in screen to explore populated, fictional data, or create your own account. The same account works on Android and web.
 
 ## Four complete journeys
 
@@ -63,4 +69,4 @@ See [verification evidence](docs/VERIFICATION.md), [design system](docs/DESIGN_S
 
 Public GitHub: https://github.com/debsouryadatta/Tenday .
 
-Preview downloads: [Android APK](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday.apk), [portable Vite web build](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday-web.zip). Run the web app locally with `pnpm dev:web` (port 5173), or deploy `apps/web/dist` to an HTTPS static host with an SPA fallback. `apps/web/vercel.json` supplies that rewrite for Vercel. No ChatGPT login or Sites hosting is required. Watch the [90-second native walkthrough](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0-preview/Tenday-walkthrough.mp4), edited at 2× with synthetic data. See [verification](docs/VERIFICATION.md) for exact evidence and device limitations.
+Downloads: [Android APK](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0/Tenday.apk) (arm64, signed release) and [static web build](https://github.com/debsouryadatta/Tenday/releases/download/v1.0.0/Tenday-web.zip). The hosted web app is https://tenday-two.vercel.app . Run it locally with `pnpm dev:web` (port 5173), or deploy `apps/web/dist` to any HTTPS static host with an SPA fallback (`apps/web/vercel.json` supplies the rewrite for Vercel). See [verification](docs/VERIFICATION.md) for exact evidence and device limitations.
