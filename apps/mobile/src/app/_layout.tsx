@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { hideSplash } from '../lib/boot';
 import { Stack, useRouter, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
@@ -22,6 +23,7 @@ import { IdentityProvider, useIdentity } from '../lib/auth-session';
 
 export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
   const router = useRouter();
+  useEffect(() => hideSplash(), []);
   return (
     <Screen
       eyebrow="Something went wrong"
@@ -52,14 +54,27 @@ const storage =
         setItem: SecureStore.setItemAsync,
         removeItem: SecureStore.deleteItemAsync,
       };
+/** Hides the native splash once the first real screen has committed. */
+function Ready() {
+  useEffect(() => hideSplash(), []);
+  return null;
+}
 function SessionGate({ children }: { children: React.ReactNode }) {
   const identity = useIdentity();
   if (identity.switching) return <Loading label={identity.switching} />;
   if (identity.loading) return <Loading />;
   if (!identity.authenticated || identity.account?.legacy)
-    return <Authentication />;
+    return (
+      <>
+        <Authentication />
+        <Ready />
+      </>
+    );
   return (
-    <AppStateProvider key={identity.account!.id}>{children}</AppStateProvider>
+    <AppStateProvider key={identity.account!.id}>
+      {children}
+      <Ready />
+    </AppStateProvider>
   );
 }
 export default function Root() {

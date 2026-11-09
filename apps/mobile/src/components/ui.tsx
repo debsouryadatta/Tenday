@@ -423,6 +423,9 @@ export function Screen({
         {scroll ? (
           <ScrollView
             ref={scrollRef}
+            // Lets Android bottom sheets scroll this content back to the top
+            // before a downward drag starts dismissing the sheet.
+            nestedScrollEnabled
             style={s.flex}
             contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"

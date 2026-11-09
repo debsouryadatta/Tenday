@@ -1,0 +1,48 @@
+diff --git a/android/src/main/java/com/swmansion/rnscreens/Screen.kt b/android/src/main/java/com/swmansion/rnscreens/Screen.kt
+index 2f2133bf28c8e7e0fe0d63f71ba34c6b070ae06e..fbb3e4acbb4d48f30df0b43c5e3af2ff259defb4 100644
+--- a/android/src/main/java/com/swmansion/rnscreens/Screen.kt
++++ b/android/src/main/java/com/swmansion/rnscreens/Screen.kt
+@@ -565,7 +565,35 @@ class Screen(
+         updateShadowNodeScreenSize(width, height, top + translationY.toInt())
+     }
+ 
++    // Tenday patch: Material's BottomSheetBehavior only lets inner content scroll before
++    // dragging the sheet when it found that scroll view during its own layout pass. With Fabric
++    // the content ScrollView usually mounts after that pass, so every downward drag dismissed the
++    // sheet. Re-lay out the sheet whenever a new nested-scrolling descendant appears.
++    private var sheetScrollingChild: java.lang.ref.WeakReference<View>? = null
++    private val sheetScrollingChildObserver =
++        android.view.ViewTreeObserver.OnGlobalLayoutListener {
++            if (!usesFormSheetPresentation()) return@OnGlobalLayoutListener
++            val found = findSheetScrollingChild(this)
++            if (found != null && found !== sheetScrollingChild?.get()) {
++                sheetScrollingChild = java.lang.ref.WeakReference(found)
++                (parent as? View)?.requestLayout()
++            }
++        }
++
++    private fun findSheetScrollingChild(view: View): View? {
++        if (view.visibility != View.VISIBLE) return null
++        if (androidx.core.view.ViewCompat.isNestedScrollingEnabled(view)) return view
++        if (view is ViewGroup) {
++            for (i in 0 until view.childCount) {
++                findSheetScrollingChild(view.getChildAt(i))?.let { return it }
++            }
++        }
++        return null
++    }
++
+     override fun onDetachedFromWindow() {
++        viewTreeObserver.removeOnGlobalLayoutListener(sheetScrollingChildObserver)
++        sheetScrollingChild = null
+         super.onDetachedFromWindow()
+         // Rotation may reset the shadow state while this screen is covered. Republish it on the
+         // next layout, even if the native frame is identical to the one before detaching.
+@@ -574,6 +602,7 @@ class Screen(
+ 
+     override fun onAttachedToWindow() {
+         super.onAttachedToWindow()
++        viewTreeObserver.addOnGlobalLayoutListener(sheetScrollingChildObserver)
+ 
+         // Insets handler for formSheet is added onResume but it is often too late if we use input
+         // with autofocus - onResume is called after finishing animator animation.

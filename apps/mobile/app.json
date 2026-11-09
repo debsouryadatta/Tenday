@@ -25,6 +25,15 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0C0D0C",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
       "expo-font",
       "expo-secure-store",
       [
@@ -48,10 +57,8 @@
           "android": {
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "buildArchs": [
-              "arm64-v8a",
-              "x86_64"
-            ]
+            "buildArchs": ["arm64-v8a"],
+            "useLegacyPackaging": true
           }
         }
       ],
